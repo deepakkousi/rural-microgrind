@@ -25,7 +25,7 @@
 | **Task 2** | Explain *why* energy usage is higher than expected between 5 PM and 7 PM. | User reads non-technical root cause description (WHAT, WHY, EVIDENCE). | < 45 seconds |
 | **Task 3** | Locate and apply the recommended operational action for the water pump. | User clicks "Apply Action" on recommendation REC_WP_01. | < 30 seconds |
 | **Task 4** | Check whether data feeds are current or stale. | User identifies Freshness Banner status (LIVE / STALE). | < 15 seconds |
-| **Task 5** | Determine total verified monthly financial savings. | Manager locates verified cost savings (₹62,910). | < 20 seconds |
+| **Task 5** | Determine total verified monthly financial savings. | Manager locates verified cost savings (₹30,019). | < 20 seconds |
 
 ---
 

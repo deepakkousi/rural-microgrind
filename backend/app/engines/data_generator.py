@@ -121,17 +121,17 @@ def generate_microgrid_dataset(days: int = 90, interval_minutes: int = 15) -> pd
         occ = row['occupancy']
 
         # --- WATER PUMP (LOAD SHIFTING / COST REDUCTION) ---
-        # Baseline: Pump runs during PEAK tariff (17:00 - 19:00). 14.4 kWh/day total.
-        # Verification: Pump shifted to OFF-PEAK (22:00 - 00:00). Same 14.4 kWh/day total!
+        # Baseline: Pump runs during PEAK tariff (17:00 - 19:00). 2 hours runtime.
+        # Verification: Pump shifted to OFF-PEAK (22:00 - 00:00). Exact same 2 hours runtime & same power range!
         if day <= 30:
-            wp = np.random.uniform(6.8, 7.5) if (17 <= h < 19) else np.random.uniform(0.0, 0.3)
+            wp = np.random.uniform(6.8, 7.5) if (17 <= h < 19) else np.random.uniform(0.0, 0.2)
         elif day <= 60:
             if day % 2 == 0:
-                wp = np.random.uniform(6.8, 7.5) if (22 <= h < 24) else np.random.uniform(0.0, 0.3)
+                wp = np.random.uniform(6.8, 7.5) if (22 <= h < 24) else np.random.uniform(0.0, 0.2)
             else:
-                wp = np.random.uniform(6.8, 7.5) if (17 <= h < 19) else np.random.uniform(0.0, 0.3)
+                wp = np.random.uniform(6.8, 7.5) if (17 <= h < 19) else np.random.uniform(0.0, 0.2)
         else:
-            wp = np.random.uniform(6.8, 7.5) if (22 <= h < 24) else np.random.uniform(0.0, 0.3)
+            wp = np.random.uniform(6.8, 7.5) if (22 <= h < 24) else np.random.uniform(0.0, 0.2)
 
         # --- HVAC CHILLERS (TRUE ENERGY REDUCTION) ---
         # Baseline: HVAC runs 8 AM - 6 PM at full capacity (18-24 kW) regardless of occupancy.
@@ -150,23 +150,22 @@ def generate_microgrid_dataset(days: int = 90, interval_minutes: int = 15) -> pd
                 hvc = np.random.uniform(0.0, 1.0)
 
         # --- LAB EQUIPMENT CNC (LOAD SHIFTING / COST REDUCTION) ---
-        # Baseline: CNC runs during PEAK tariff (14:00 - 17:00).
-        # Verification: CNC shifted to Morning SHOULDER tariff (9:00 - 12:00). Same energy!
+        # Baseline: CNC runs 3 hours during PEAK tariff (14:00 - 17:00).
+        # Verification: CNC runs exact same 3 hours during Morning SHOULDER tariff (09:00 - 12:00) with identical power draw!
+        # Background load (10-14 in baseline is replaced by 12-16 in verification to maintain identical background).
         if day <= 30:
             if 14 <= h < 17:
                 lab = np.random.uniform(11.0, 14.0)
-            elif 10 <= h < 14:
-                lab = np.random.uniform(3.0, 5.0)
             else:
                 lab = np.random.uniform(0.2, 0.8)
         elif day <= 60:
-            if 9 <= h < 12:
-                lab = np.random.uniform(10.0, 13.5)
+            if day % 2 == 0:
+                lab = np.random.uniform(11.0, 14.0) if (9 <= h < 12) else np.random.uniform(0.2, 0.8)
             else:
-                lab = np.random.uniform(0.5, 2.0)
+                lab = np.random.uniform(11.0, 14.0) if (14 <= h < 17) else np.random.uniform(0.2, 0.8)
         else:
             if 9 <= h < 12:
-                lab = np.random.uniform(9.5, 13.0)
+                lab = np.random.uniform(11.0, 14.0)
             else:
                 lab = np.random.uniform(0.2, 0.8)
 

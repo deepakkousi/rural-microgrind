@@ -8,7 +8,7 @@ class DisaggregationEngine:
     def disaggregate_dataframe(self, df: pd.DataFrame) -> Dict[str, Any]:
         """
         Disaggregates 15-minute telemetry into tier breakdowns (Critical, Essential, Flexible)
-        and evaluates synthetic scenario disaggregation metrics (MAE, RMSE, MAPE).
+        and evaluates synthetic scenario disaggregation metrics (MAE, RMSE, MAPE, WAPE).
         """
         if df.empty:
             return {}
@@ -43,9 +43,20 @@ class DisaggregationEngine:
         component_sum = df['it_network_kw'] + df['kitchen_kw'] + df['lighting_kw'] + df['water_pump_kw'] + df['hvac_kw'] + df['lab_equipment_kw']
         total_series = df['total_kw']
         
-        mae = float(np.mean(np.abs(total_series - component_sum)))
-        rmse = float(np.sqrt(np.mean((total_series - component_sum) ** 2)))
-        mape = float(np.mean(np.abs((total_series - component_sum) / np.maximum(0.1, total_series))) * 100)
+        abs_errors = np.abs(total_series - component_sum)
+        mae = float(np.mean(abs_errors))
+        rmse = float(np.sqrt(np.mean(abs_errors ** 2)))
+        
+        # Safe MAPE calculation (ignoring zero totals or using threshold)
+        non_zero_mask = total_series > 0.5
+        if np.sum(non_zero_mask) > 0:
+            mape = float(np.mean(abs_errors[non_zero_mask] / total_series[non_zero_mask]) * 100)
+        else:
+            mape = 0.0
+            
+        # Weighted Absolute Percentage Error (WAPE = sum(|actual - est|) / sum(actual) * 100)
+        total_sum = np.sum(total_series)
+        wape = float((np.sum(abs_errors) / max(0.1, total_sum)) * 100)
 
         # Equipment detail breakdown
         equipment_list = get_all_equipment()
@@ -94,7 +105,8 @@ class DisaggregationEngine:
             "evaluation_metrics": {
                 "mae_kw": round(mae, 3),
                 "rmse_kw": round(rmse, 3),
-                "mape_pct": round(mape, 2)
+                "mape_pct": round(mape, 2),
+                "wape_pct": round(wape, 2)
             },
             "detailed_loads": detailed_loads
         }
@@ -123,13 +135,11 @@ class DisaggregationEngine:
             
             # Expected schedule baseline estimation
             if eq.equipment_id == "EQ_WP_01":
-                # Baseline expected pump off during peak tariff (17-19)
                 expected_kw = 7.0 if (22 <= h or h < 2) else 0.0
             elif eq.equipment_id == "EQ_HVAC_01":
-                # Expected HVAC proportional to occupancy
                 expected_kw = (occ / 100.0) * 22.0 if (8 <= h < 18) else 0.0
             elif eq.equipment_id == "EQ_LAB_01":
-                expected_kw = 12.0 if (9 <= h < 13) else 0.0
+                expected_kw = 12.0 if (9 <= h < 12) else 0.0
             else:
                 expected_kw = ch_val * 0.9
 
@@ -144,22 +154,27 @@ class DisaggregationEngine:
 
         # Non-technical explanation synthesis
         if eq.equipment_id == "EQ_WP_01":
-            cause = "Water pump operates during high-tariff evening hours (5 PM - 7 PM), incurring maximum electricity rate charges."
-            recommendation = "Shift water pumping schedule to late night off-peak tariff (10 PM - 2 AM)."
+            cause = "Water pumping operates during the peak evening electricity tariff (5 PM - 7 PM). Shifting pump operation to late night off-peak hours cuts electricity costs without reducing water pumped."
+            recommendation = "Shift water pumping schedule to the off-peak tariff window (10 PM - 2 AM). (Load shifting / cost reduction)."
+            evidence_type = "COST_REDUCTION"
         elif eq.equipment_id == "EQ_HVAC_01":
-            cause = "HVAC cooling remains at 100% full power during low-occupancy periods (lunchtime & late afternoon), wasting power in empty spaces."
-            recommendation = "Enable automated setback control to reduce cooling when occupancy drops below 25%."
+            cause = "Air conditioning cooling output remains high during lunch hours and late afternoon when student occupancy drops below 25%."
+            recommendation = "Enable automated setback control to reduce cooling when room occupancy drops below 25%. (Direct energy reduction)."
+            evidence_type = "ENERGY_REDUCTION"
         elif eq.equipment_id == "EQ_LAB_01":
-            cause = "Heavy workshop CNC machinery is scheduled during peak tariff hours (2 PM - 5 PM)."
-            recommendation = "Shift non-urgent workshop machining to morning shoulder tariff (9 AM - 1 PM)."
+            cause = "Heavy workshop CNC machining practicals run during peak electricity tariff (2 PM - 5 PM)."
+            recommendation = "Shift machining practical classes to the morning shoulder tariff window (9 AM - 12 PM). (Load shifting / cost reduction)."
+            evidence_type = "COST_REDUCTION"
         else:
             cause = "Normal operational consumption within expected load parameters."
             recommendation = "Maintain current operational schedule."
+            evidence_type = "NORMAL"
 
         return {
             "equipment_id": eq.equipment_id,
             "equipment_name": eq.equipment_name,
             "load_tier": eq.load_tier,
+            "impact_type": evidence_type,
             "location": eq.location,
             "rated_power_kw": eq.rated_power_kw,
             "is_essential": eq.is_essential,

@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/Python-3.13%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-sky.svg)](https://reactjs.org)
-[![Build Status](https://img.shields.io/badge/Tests-23%2F23%20Passed-emerald.svg)]()
+[![Build Status](https://img.shields.io/badge/Tests-30%2F30%20Passed-emerald.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
 > A scenario-based disaggregation, actionable cause detection, operational recommendation, and empirical verification platform for rural microgrids.
@@ -141,16 +141,16 @@ The system explains root causes with transparent Evidence Strength Scores (0–1
 ## 📈 Baseline vs. Measured Energy Reduction Experiment
 
 Three 30-day experimental phases calculated dynamically from raw telemetry:
-- **BASELINE (Days 1–30)**: `658.9 kWh/day` average
-- **TARGET (15% Goal Target)**: `560.1 kWh/day` (Target Reduction: `98.8 kWh/day`)
-- **MEASURED (Days 61–90)**: `559.2 kWh/day`
-- **VERIFIED REDUCTION**: `99.7 kWh/day` (`15.13%` reduction)
-- **TARGET ACHIEVEMENT RATIO**: `100.9%`
+- **BASELINE (Days 1–30)**: `643.9 kWh/day` average
+- **TARGET (15% Goal Target)**: `547.3 kWh/day` (Target Reduction: `96.6 kWh/day`)
+- **MEASURED (Days 61–90)**: `561.9 kWh/day`
+- **VERIFIED REDUCTION**: `82.0 kWh/day` (`12.73%` reduction)
+- **TARGET ACHIEVEMENT RATIO**: `84.9%`
 
 ### Measured Financial Savings & Error Analysis
-- **Daily Financial Saving**: `₹1,123.73 / day` (`₹33,711.90` total over 30-day verification period)
-- **Target Error**: `0.9 kWh/day` (`0.91%` absolute percentage error)
-- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `97.9 kWh/day`, upper bound: `101.5 kWh/day`.
+- **Daily Financial Saving**: `₹1,000.63 / day` (`₹30,018.90` total over 30-day verification period)
+- **Target Error**: `14.6 kWh/day` (`15.11%` error against goal)
+- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
 
 ---
 
@@ -192,7 +192,7 @@ Run Pytest suite:
 cd backend
 python -m pytest tests/ -v
 ```
-**Test Results**: **23 / 23 Passed (100% Pass Rate)**.
+**Test Results**: **30 / 30 Passed (100% Pass Rate)**.
 
 ---
 

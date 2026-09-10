@@ -34,7 +34,7 @@ class DisaggregationSummary(BaseModel):
     essential_kw: float
     flexible_kw: float
     critical_kw: float
-    evaluation: Dict[str, float] # MAE, RMSE, MAPE
+    evaluation: Dict[str, float] # MAE, RMSE, MAPE, WAPE
 
 class CauseEvidence(BaseModel):
     metric: str
@@ -47,13 +47,16 @@ class Recommendation(BaseModel):
     equipment_id: str
     equipment_name: str
     load_tier: str
+    action_type: str = "COST_REDUCTION" # COST_REDUCTION (LOAD SHIFT) or ENERGY_REDUCTION
     problem: str
     cause: str
     evidence: CauseEvidence
     recommended_action: str
-    estimated_energy_saving_kwh: float
+    estimated_energy_saving_kwh: float # 0.0 for pure load shifts
     estimated_cost_saving: float
-    confidence: float # 0.0 to 1.0
+    evidence_score: int = 90 # 0 - 100 measurable score
+    evidence_breakdown: Dict[str, int] = {}
+    confidence: float # legacy compatibility 0.0 to 1.0 (evidence_score / 100.0)
     data_freshness: str # LIVE, STALE, VERY_STALE, MISSING
     priority: str # HIGH, MEDIUM, LOW
     status: str # PENDING, APPLIED, REJECTED
@@ -67,20 +70,21 @@ class FreshnessStatus(BaseModel):
     warning_message: Optional[str] = None
 
 class VerificationSummary(BaseModel):
-    baseline_period: str
-    intervention_period: str
-    verification_period: str
-    baseline_daily_avg_kwh: float
-    target_daily_avg_kwh: float
-    measured_daily_avg_kwh: float
-    verified_reduction_kwh_day: float
-    verified_reduction_pct: float
-    cost_saving_daily: float
-    cost_saving_total: float
-    measurement_error_margin_pct: float
-    lower_bound_kwh: float
-    upper_bound_kwh: float
-    interventions_applied: List[Dict[str, Any]]
+    status: str = "AVAILABLE" # AVAILABLE or DATA_UNAVAILABLE
+    message: Optional[str] = None
+    baseline_period: Optional[str] = None
+    intervention_period: Optional[str] = None
+    verification_period: Optional[str] = None
+    baseline_daily_avg_kwh: Optional[float] = None
+    target_daily_avg_kwh: Optional[float] = None
+    measured_daily_avg_kwh: Optional[float] = None
+    verified_reduction_kwh_day: Optional[float] = None
+    verified_reduction_pct: Optional[float] = None
+    cost_saving_daily: Optional[float] = None
+    cost_saving_total: Optional[float] = None
+    target_achievement_pct: Optional[float] = None
+    error_analysis: Optional[Dict[str, Any]] = None
+    interventions_applied: Optional[List[Dict[str, Any]]] = None
 
 class FailureSimulationRequest(BaseModel):
     failure_type: str # MISSING_DATA, STALE_DATA, STUCK_SENSOR, NEGATIVE_READING, TARIFF_REVISION, RESET
@@ -89,6 +93,8 @@ class FailureSimulationRequest(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str
+    engine_count: int
     service_count: int
+    engines: Dict[str, str]
     services: Dict[str, str]
     timestamp: str

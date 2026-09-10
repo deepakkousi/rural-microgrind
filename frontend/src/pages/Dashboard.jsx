@@ -85,9 +85,11 @@ export default function Dashboard({ currentRole, lang, onNavigate }) {
               <DollarSign className="h-5 w-5 text-emerald-400" />
             </div>
             <div className="text-2xl font-bold text-emerald-400 mt-2 font-mono">
-              ₹{verification ? verification.cost_saving_total.toLocaleString() : '62,910'}
+              {verification && verification.status !== 'DATA_UNAVAILABLE' && verification.cost_saving_total != null
+                ? `₹${verification.cost_saving_total.toLocaleString()}`
+                : 'Pending Telemetry'}
             </div>
-            <div className="text-xs text-slate-400 mt-1">Verified over 30-day verification period</div>
+            <div className="text-xs text-slate-400 mt-1">Verified across 30-day verification period</div>
           </div>
         </RoleViewWrapper>
 
@@ -97,10 +99,14 @@ export default function Dashboard({ currentRole, lang, onNavigate }) {
             <Shield className="h-5 w-5 text-sky-400" />
           </div>
           <div className="text-2xl font-bold text-sky-400 mt-2 font-mono">
-            {verification ? verification.verified_reduction_pct : '16.35'}%
+            {verification && verification.status !== 'DATA_UNAVAILABLE' && verification.verified_reduction_pct != null
+              ? `${verification.verified_reduction_pct}%`
+              : 'Pending Telemetry'}
           </div>
           <div className="text-xs text-slate-400 mt-1">
-            Baseline ({verification ? verification.baseline_daily_avg_kwh : 1425} kWh) vs Measured ({verification ? verification.measured_daily_avg_kwh : 1192} kWh)
+            {verification && verification.status !== 'DATA_UNAVAILABLE' && verification.baseline_daily_avg_kwh != null
+              ? `Baseline (${verification.baseline_daily_avg_kwh} kWh) vs Measured (${verification.measured_daily_avg_kwh} kWh)`
+              : 'Telemetry comparison in progress'}
           </div>
         </div>
       </div>
@@ -188,6 +194,11 @@ export default function Dashboard({ currentRole, lang, onNavigate }) {
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-white text-sm">{rec.equipment_name}</span>
                   <span className="text-xs px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">{rec.priority} PRIORITY</span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    rec.action_type === 'ENERGY_REDUCTION' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-amber-500/20 text-amber-300'
+                  }`}>
+                    {rec.action_type === 'ENERGY_REDUCTION' ? 'ENERGY REDUCTION' : 'LOAD SHIFT (COST)'}
+                  </span>
                 </div>
                 <p className="text-xs text-amber-300">{rec.problem}</p>
                 <p className="text-xs text-slate-400">{rec.cause}</p>
@@ -196,7 +207,9 @@ export default function Dashboard({ currentRole, lang, onNavigate }) {
               <div className="flex items-center space-x-3 shrink-0">
                 <div className="text-right text-xs font-mono">
                   <div className="text-emerald-400 font-bold">Save ₹{rec.estimated_cost_saving.toLocaleString()}/mo</div>
-                  <div className="text-slate-400">{rec.estimated_energy_saving_kwh} kWh/mo</div>
+                  <div className="text-slate-400">
+                    {rec.estimated_energy_saving_kwh > 0 ? `${rec.estimated_energy_saving_kwh} kWh/mo` : '0 kWh (Shift)'}
+                  </div>
                 </div>
                 <button
                   onClick={() => setSelectedLoad(rec.equipment_id)}

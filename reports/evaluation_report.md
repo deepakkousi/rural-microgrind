@@ -101,14 +101,14 @@ Provides interactive 24-hour time series alignment overlaying Actual Load, Targe
 ---
 
 ### **12 – 15. Verified Energy Reduction & Error Analysis**
-- **Baseline Period (Days 1–30)**: `658.9 kWh/day` average
-- **Target Expectation**: `560.1 kWh/day` (Target Reduction: `98.8 kWh/day`)
-- **Measured Period (Days 61–90)**: `559.2 kWh/day`
-- **Verified Energy Reduction**: `99.7 kWh/day` (`15.13%` energy reduction)
-- **Target Achievement Ratio**: `100.9%`
-- **Verified Financial Saving**: `₹1,123.73 / day` (`₹33,711.90` total over 30-day verification period)
-- **Target Error**: `0.9 kWh/day` (`0.91%` absolute percentage error)
-- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `97.9 kWh/day`, upper bound: `101.5 kWh/day`.
+- **Baseline Period (Days 1–30)**: `643.9 kWh/day` average
+- **Target Expectation**: `547.3 kWh/day` (Target Reduction: `96.6 kWh/day`)
+- **Measured Period (Days 61–90)**: `561.9 kWh/day`
+- **Verified Energy Reduction**: `82.0 kWh/day` (`12.73%` energy reduction)
+- **Target Achievement Ratio**: `84.9%`
+- **Verified Financial Saving**: `₹1,000.63 / day` (`₹30,018.90` total over 30-day verification period)
+- **Target Error**: `14.6 kWh/day` (`15.11%` error against goal)
+- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
 
 ---
 
@@ -124,8 +124,8 @@ Provides interactive 24-hour time series alignment overlaying Actual Load, Targe
 
 ### **18. Automated Testing Results**
 - **Executed Test Suite**: Pytest
-- **Actual Total Tests**: **23**
-- **Passed**: **23** (`100%` pass rate)
+- **Actual Total Tests**: **30**
+- **Passed**: **30** (`100%` pass rate)
 - **Failed**: **0**
 
 ---

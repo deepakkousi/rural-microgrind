@@ -10,7 +10,7 @@ class CauseDetectionEngine:
         """
         Analyzes microgrid consumption telemetry against equipment schedules, occupancy data,
         and Time-of-Use tariffs to detect actionable causes of excess energy consumption and cost.
-        Generates dynamic explanations and transparent Evidence Strength Scores (0-100).
+        Generates dynamic non-technical explanations and transparent Evidence Strength Scores (0-100).
         """
         recommendations: List[Recommendation] = []
         freshness = quality_engine.evaluate_freshness(
@@ -44,28 +44,34 @@ class CauseDetectionEngine:
             daily_cost_saving = daily_kwh * tariff_diff
             monthly_cost_saving = daily_cost_saving * 30
 
-            # Evidence Strength Score Calculation (0-100)
-            schedule_score = 30
-            tariff_score = 20
-            occ_score = 15
-            total_evidence_score = freshness_score + schedule_score + tariff_score + occ_score
+            # Transparent Evidence Strength Score (0-100)
+            breakdown = {
+                "telemetry_freshness": freshness_score,
+                "schedule_correlation": 30,
+                "tariff_overlap": 20,
+                "pattern_consistency": 15
+            }
+            total_evidence_score = sum(breakdown.values())
 
             recommendations.append(Recommendation(
                 recommendation_id="REC_WP_01",
                 equipment_id="EQ_WP_01",
                 equipment_name="Overhead Tank Water Pump",
                 load_tier="Essential",
+                action_type="COST_REDUCTION",
                 problem=f"Water pump operates during high peak-tariff pricing (₹{avg_peak_tariff:.1f}/kWh).",
-                cause=f"Automatic pump schedule is configured between 17:00 and 19:00, drawing an average of {avg_peak_kw:.1f} kW during the highest tariff rate period.",
+                cause=f"Water pumping is scheduled between 5 PM and 7 PM during the expensive evening electricity tariff window. Running the pump during this window increases electricity bills without providing additional water.",
                 evidence=CauseEvidence(
                     metric="Peak Tariff Pumping Load",
                     observed_value=round(avg_peak_kw, 2),
                     expected_value=0.0,
-                    context=f"Pump consumes {avg_peak_kw:.1f} kW during ₹{avg_peak_tariff:.1f}/kWh Peak Tariff. Shifting to Off-Peak (₹{off_peak_tariff:.1f}/kWh) reduces electricity cost without affecting water supply."
+                    context=f"Pump draws an average of {avg_peak_kw:.1f} kW during the ₹{avg_peak_tariff:.1f}/kWh peak period. Shifting this 2-hour run window to the ₹{off_peak_tariff:.1f}/kWh off-peak period saves money without reducing total water pumped."
                 ),
-                recommended_action="Reconfigure water pump timer to run during Off-Peak tariff (10 PM - 2 AM). Load shifted to a cheaper tariff; reduces cost but does not reduce energy (kWh).",
-                estimated_energy_saving_kwh=0.0, # Load Shift = 0 kWh reduction!
+                recommended_action="Shift water pumping schedule to the off-peak tariff window (10 PM - 2 AM). Load shifted to a cheaper tariff; reduces cost but does not reduce energy (kWh).",
+                estimated_energy_saving_kwh=0.0, # Load Shift = 0 kWh reduction
                 estimated_cost_saving=round(monthly_cost_saving, 2),
+                evidence_score=total_evidence_score,
+                evidence_breakdown=breakdown,
                 confidence=round(total_evidence_score / 100.0, 2),
                 data_freshness=freshness.status,
                 priority="HIGH",
@@ -77,6 +83,7 @@ class CauseDetectionEngine:
         if len(low_occ_hvac) > 10:
             avg_hvac_kw = float(low_occ_hvac['hvac_kw'].mean())
             avg_hvac_tariff = float(low_occ_hvac['tariff_rate'].mean())
+            avg_occ = float(low_occ_hvac['occupancy'].mean())
             setback_target_kw = 7.0
             kw_saving = max(0.0, avg_hvac_kw - setback_target_kw)
             daily_hours = 2.5
@@ -85,24 +92,33 @@ class CauseDetectionEngine:
             monthly_kwh_saving = daily_kwh_saving * 30
             monthly_cost_saving = daily_cost_saving * 30
 
-            total_evidence_score = freshness_score + 30 + 20 + 15 # 95 score
+            breakdown = {
+                "telemetry_freshness": freshness_score,
+                "occupancy_correlation": 30,
+                "schedule_correlation": 20,
+                "pattern_consistency": 15
+            }
+            total_evidence_score = sum(breakdown.values())
 
             recommendations.append(Recommendation(
                 recommendation_id="REC_HVAC_01",
                 equipment_id="EQ_HVAC_01",
                 equipment_name="Academic Block HVAC Chillers",
                 load_tier="Flexible",
-                problem=f"HVAC cooling operating at high power ({avg_hvac_kw:.1f} kW) during low occupancy intervals.",
-                cause=f"HVAC chillers lack automated occupancy feedback, remaining active at ~{avg_hvac_kw:.1f} kW during lunchtime and late afternoon when room occupancy drops below 25%.",
+                action_type="ENERGY_REDUCTION",
+                problem=f"Air conditioning is using more electricity than expected while few rooms are occupied.",
+                cause=f"HVAC chillers maintain full cooling output ({avg_hvac_kw:.1f} kW) during lunchtime and late afternoon when student occupancy drops to {avg_occ:.1f}%.",
                 evidence=CauseEvidence(
                     metric="Low-Occupancy HVAC Load",
                     observed_value=round(avg_hvac_kw, 2),
-                    expected_value=7.0,
-                    context=f"HVAC draws {avg_hvac_kw:.1f} kW while room occupancy is under 25%. Enabling setback reduces power draw, delivering genuine energy (kWh) reduction."
+                    expected_value=setback_target_kw,
+                    context=f"Cooling power remains at {avg_hvac_kw:.1f} kW while average room occupancy is only {avg_occ:.1f}%. Applying setback saves {kw_saving:.1f} kW per low-occupancy hour, delivering genuine energy (kWh) reduction."
                 ),
-                recommended_action="Implement smart setback controls to adjust thermostat by 2°C when room occupancy drops below 25%. Lowers cooling power draw, resulting in true energy (kWh) reduction.",
+                recommended_action="Set back thermostat by 2°C or idle chiller capacity when room occupancy drops below 25%. Lowers cooling power draw, resulting in true energy (kWh) reduction.",
                 estimated_energy_saving_kwh=round(monthly_kwh_saving, 1),
                 estimated_cost_saving=round(monthly_cost_saving, 2),
+                evidence_score=total_evidence_score,
+                evidence_breakdown=breakdown,
                 confidence=round(total_evidence_score / 100.0, 2),
                 data_freshness=freshness.status,
                 priority="HIGH",
@@ -122,24 +138,33 @@ class CauseDetectionEngine:
             daily_cost_saving = daily_kwh * tariff_diff
             monthly_cost_saving = daily_cost_saving * 30
 
-            total_evidence_score = freshness_score + 30 + 15 + 15 # 90 score
+            breakdown = {
+                "telemetry_freshness": freshness_score,
+                "schedule_correlation": 30,
+                "tariff_overlap": 20,
+                "pattern_consistency": 15
+            }
+            total_evidence_score = sum(breakdown.values())
 
             recommendations.append(Recommendation(
                 recommendation_id="REC_LAB_01",
                 equipment_id="EQ_LAB_01",
                 equipment_name="Heavy Workshop CNC Machine",
                 load_tier="Flexible",
-                problem=f"Heavy CNC machining practical classes run during Peak Tariff (₹{avg_lab_tariff:.1f}/kWh).",
-                cause=f"Workshop CNC machine practicals draw an average of {avg_lab_kw:.1f} kW between 14:00 and 17:00 when electricity is most expensive.",
+                action_type="COST_REDUCTION",
+                problem=f"Heavy workshop machining practical classes run during Peak Tariff (₹{avg_lab_tariff:.1f}/kWh).",
+                cause=f"High-power machining sessions operate between 2 PM and 5 PM during the highest electricity rate window.",
                 evidence=CauseEvidence(
                     metric="Peak Tariff Lab Load",
                     observed_value=round(avg_lab_kw, 2),
                     expected_value=0.0,
-                    context=f"CNC draws {avg_lab_kw:.1f} kW during Peak Tariff (₹{avg_lab_tariff:.1f}/kWh) when Shoulder rate is ₹{shoulder_tariff:.1f}/kWh."
+                    context=f"CNC machine draws {avg_lab_kw:.1f} kW during the ₹{avg_lab_tariff:.1f}/kWh peak period. Rescheduling practicals to the morning shoulder tariff (₹{shoulder_tariff:.1f}/kWh) avoids the peak rate surcharge."
                 ),
-                recommended_action="Reschedule CNC heavy milling lab sessions to morning shoulder tariff hours (9 AM - 12 PM). Load shifted to a cheaper tariff; reduces cost but does not reduce energy (kWh).",
-                estimated_energy_saving_kwh=0.0,
+                recommended_action="Reschedule CNC machining practicals to the morning shoulder tariff hours (9 AM - 12 PM). Load shifted to a cheaper tariff; reduces cost but does not reduce energy (kWh).",
+                estimated_energy_saving_kwh=0.0, # Load Shift = 0 kWh reduction
                 estimated_cost_saving=round(monthly_cost_saving, 2),
+                evidence_score=total_evidence_score,
+                evidence_breakdown=breakdown,
                 confidence=round(total_evidence_score / 100.0, 2),
                 data_freshness=freshness.status,
                 priority="MEDIUM",
