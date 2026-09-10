@@ -69,5 +69,6 @@ def test_solar_greater_than_load_edge_case():
     df = generate_microgrid_dataset(days=1)
     df.loc[0, 'solar_gen_kw'] = 50.0
     df.loc[0, 'total_kw'] = 10.0
-    df['net_grid_kw'] = np.round((df['total_kw'] - df['solar_gen_kw']).clip(lower=0.0), 2)
-    assert df.loc[0, 'net_grid_kw'] == 0.0 # Never negative grid import
+    df['net_grid_kw'] = np.round(df['total_kw'] - df['solar_gen_kw'], 2)
+    # Physically meaningful negative net-grid value indicates solar power export to utility/battery
+    assert df.loc[0, 'net_grid_kw'] == -40.0

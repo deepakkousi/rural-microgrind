@@ -37,7 +37,11 @@ def test_day_index_continuity():
 def test_solar_and_grid_physics():
     df = generate_microgrid_dataset()
     assert (df['solar_gen_kw'] >= 0.0).all()
-    assert (df['net_grid_kw'] >= 0.0).all()
+    # Physical conservation of power: net_grid_kw = total_kw - solar_gen_kw
+    expected_net = np.round(df['total_kw'] - df['solar_gen_kw'], 2)
+    assert np.allclose(df['net_grid_kw'], expected_net, atol=0.01)
+    # When solar generation exceeds load, net_grid is physically negative (export to grid/battery)
+    assert (df['net_grid_kw'] < 0.0).any()
     assert (df['total_kw'] > 0.0).all()
 
 def test_tariff_periods_and_rates():

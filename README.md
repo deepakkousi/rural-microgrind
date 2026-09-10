@@ -107,7 +107,7 @@ The system generates a 90-day synthetic dataset at 15-minute intervals (8,640 re
 | `occupancy` | Float | Campus room occupancy percentage (0–100%) |
 | `tariff_period` | String | Time-of-Use tariff phase (`OFF_PEAK`, `SHOULDER`, `PEAK`) |
 | `tariff_rate` | Float | Electricity rate in ₹ / kWh |
-| `net_grid_kw` | Float | Net power imported from grid (`total_kw` - `solar_gen_kw`) |
+| `net_grid_kw` | Float | Net power flow in kW (`total_kw` - `solar_gen_kw`); positive = grid import, negative = solar export |
 | `day_index` | Integer | Experiment day index (1 to 90) |
 
 ---
@@ -122,16 +122,17 @@ The system generates a 90-day synthetic dataset at 15-minute intervals (8,640 re
 ### Methodology
 *"Scenario-based synthetic load disaggregation using known component meter channels, equipment schedules, and contextual signals."*
 
-### Empirical Accuracy Metrics
+### Empirical Accuracy Metrics (Evaluated on Synthetic Scenario Telemetry)
 - **Mean Absolute Error (MAE)**: `0.243 kW`
 - **Root Mean Square Error (RMSE)**: `0.304 kW`
-- **Mean Absolute Percentage Error (MAPE)**: `1.15%`
+- **Mean Absolute Percentage Error (MAPE)**: `1.17%`
+- **Weighted Absolute Percentage Error (WAPE)**: `0.98%`
 
 ---
 
 ## 🎯 Actionable Cause Detection & Recommendation Engine
 
-The engine cross-correlates power draws against schedules, occupancy, and tariff structures to generate transparent root-cause diagnoses with a 4-factor **Evidence Strength Score (0–100)**:
+The engine cross-correlates power draws against schedules, occupancy, and tariff structures to generate transparent root-cause diagnoses with a 4-factor **Evidence Strength Score (0–100)** (a transparent heuristic score, not a statistical confidence interval):
 
 ### 1. Water Pump Peak Tariff Shift (`REC_WP_01` — Cost Reduction / Load Shift)
 - **WHAT Happened?**: Water pump running during 5 PM - 7 PM Peak Tariff.
@@ -139,7 +140,7 @@ The engine cross-correlates power draws against schedules, occupancy, and tariff
 - **EVIDENCE**: 7.1 kW draw during Peak Tariff when Off-Peak rate is ₹4.5/kWh.
 - **RECOMMENDED ACTION**: Shift water pumping schedule to late night Off-Peak tariff (10 PM - 2 AM).
 - **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹3,174.60 / month` cost saving.
-- **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15).
+- **PROTOTYPE EVIDENCE SCORE**: `95 / 100` (High confidence under LIVE data: Freshness: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15; not a statistical confidence interval).
 
 ### 2. HVAC Low-Occupancy Waste (`REC_HVAC_01` — True Energy Reduction)
 - **WHAT Happened?**: Air conditioning drawing excessive power while rooms are unoccupied.
@@ -167,19 +168,19 @@ The engine cross-correlates power draws against schedules, occupancy, and tariff
 
 ---
 
-## 📈 Baseline vs. Measured Energy Reduction Experiment
+## 📈 Baseline vs. Measured Verification (Synthetic Prototype Experiment)
 
-Three 30-day experimental phases calculated dynamically from raw telemetry:
+Three 30-day experimental phases calculated dynamically from raw telemetry (verified within the synthetic prototype experiment; not real-world field data):
 - **BASELINE (Days 1–30)**: `643.9 kWh/day` average
 - **TARGET (15% Goal Target)**: `547.3 kWh/day` (Target Reduction: `96.6 kWh/day`)
 - **MEASURED (Days 61–90)**: `561.9 kWh/day`
-- **VERIFIED REDUCTION**: `82.0 kWh/day` (`12.73%` reduction)
+- **VERIFIED REDUCTION**: `82.0 kWh/day` (`12.73%` reduction within synthetic experiment)
 - **TARGET ACHIEVEMENT RATIO**: `84.9%`
 
 ### Measured Financial Savings & Error Analysis
 - **Daily Financial Saving**: `₹1,000.63 / day` (`₹30,018.90` total over 30-day verification period)
 - **Target Error**: `14.6 kWh/day` (`15.11%` error against goal)
-- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
+- **Sensor Uncertainty**: Assumed prototype sensor uncertainty (±1.8% based on typical smart meter transducer tolerance), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
 
 ### 🔬 Intervention-by-Intervention Empirical Breakdown
 
@@ -219,7 +220,7 @@ Supported & Tested Edge Cases:
 ## 🌐 Language & Accessibility Checks
 
 - **Languages**: English (`en`) and Hindi (`hi`) translation toggle.
-- **Accessibility Checks**: Keyboard focus indicators (`focus-visible:ring-2`), contrast ratio > 4.5:1, screen reader labels, non-color-only badges.
+- **Accessibility Implementation**: Accessibility features implemented with WCAG 2.1 AA-oriented practices (keyboard focus indicators `focus-visible:ring-2`, contrast ratio > 4.5:1, screen reader ARIA labels, non-color-only badges); formal compliance audit not performed.
 
 ---
 

@@ -100,20 +100,20 @@ Provides interactive 24-hour time series alignment overlaying Actual Load, Targe
 
 ---
 
-### **12 – 15. Verified Energy Reduction & Error Analysis**
+### **12 – 15. Verified Energy Reduction (Synthetic Prototype Experiment) & Error Analysis**
 - **Baseline Period (Days 1–30)**: `643.9 kWh/day` average
 - **Target Expectation**: `547.3 kWh/day` (Target Reduction: `96.6 kWh/day`)
 - **Measured Period (Days 61–90)**: `561.9 kWh/day`
-- **Verified Energy Reduction**: `82.0 kWh/day` (`12.73%` energy reduction)
+- **Verified Energy Reduction**: `82.0 kWh/day` (`12.73%` energy reduction within synthetic experiment)
 - **Target Achievement Ratio**: `84.9%`
 - **Verified Financial Saving**: `₹1,000.63 / day` (`₹30,018.90` total over 30-day verification period)
 - **Target Error**: `14.6 kWh/day` (`15.11%` error against goal)
-- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
+- **Sensor Uncertainty**: Assumed prototype sensor uncertainty (±1.8% based on typical smart meter transducer tolerance), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
 
 ---
 
-### **16. Accessibility Checks**
-- Accessibility checks implemented: Keyboard focus indicators (`focus-visible:ring-2`), contrast ratio > 4.5:1, screen reader ARIA labels, non-color-only indicators.
+### **16. Accessibility Implementation**
+- Accessibility features implemented with WCAG 2.1 AA-oriented practices: Keyboard focus indicators (`focus-visible:ring-2`), contrast ratio > 4.5:1, screen reader ARIA labels, non-color-only indicators; formal compliance audit not performed.
 
 ---
 

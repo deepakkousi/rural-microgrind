@@ -182,8 +182,9 @@ def generate_microgrid_dataset(days: int = 90, interval_minutes: int = 15) -> pd
                  df['water_pump_kw'] + df['hvac_kw'] + df['lab_equipment_kw'])
     
     df['total_kw'] = np.round(raw_total + np.random.normal(0, 0.3, total_records), 2)
-    df['total_kw'] = df['total_kw'].clip(lower=1.0)
-    df['net_grid_kw'] = np.round((df['total_kw'] - df['solar_gen_kw']).clip(lower=0.0), 2)
+    # Physical energy balance: net_grid_kw = total_kw - solar_gen_kw
+    # Positive values indicate grid import; negative values indicate solar power export/feed-in
+    df['net_grid_kw'] = np.round(df['total_kw'] - df['solar_gen_kw'], 2)
 
     df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 

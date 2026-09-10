@@ -61,7 +61,9 @@ export default function Dashboard({ currentRole, lang, onNavigate }) {
           <div className="text-2xl font-bold text-white mt-2 font-mono">{latest.total_kw || 0} kW</div>
           <div className="text-xs text-slate-400 mt-1 flex justify-between">
             <span>Solar: {latest.solar_gen_kw || 0} kW</span>
-            <span className="text-emerald-400">Net Grid: {latest.net_grid_kw || 0} kW</span>
+            <span className={latest.net_grid_kw < 0 ? "text-amber-400 font-semibold" : "text-emerald-400"}>
+              {latest.net_grid_kw < 0 ? `Export: ${Math.abs(latest.net_grid_kw)} kW` : `Net Grid: ${latest.net_grid_kw || 0} kW`}
+            </span>
           </div>
         </div>
 

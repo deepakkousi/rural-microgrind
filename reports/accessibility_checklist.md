@@ -20,4 +20,4 @@ This document audits the accessibility features implemented across the Rural Mic
 ### **Accessibility Evaluation Summary**
 - **Total Audited Criteria**: 8
 - **Verified**: 8
-- **Audit Status**: Accessibility checks implemented (Formal third-party WCAG certification pending field deployment)
+- **Audit Status**: Accessibility features implemented with WCAG 2.1 AA-oriented practices; formal compliance audit not performed.
