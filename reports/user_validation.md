@@ -33,7 +33,7 @@
 1. **Task Completion Rate**: Target ≥ 90% task success without assist.
 2. **System Usability Scale (SUS)**: Target SUS score ≥ 80 / 100.
 3. **Information Clarity & Trust**: Rated on 5-point Likert scale (Target ≥ 4.2 / 5.0).
-4. **Accessibility Audit**: Verified WCAG 2.1 AA keyboard navigation and screen-reader label compliance.
+4. **Accessibility Checks**: Keyboard navigation and screen-reader labels verified (formal third-party WCAG audit pending field trial).
 
 ---
 
