@@ -1,0 +1,17 @@
+{
+  "title": "ग्रामीण माइक्रोग्रिड इंटेलिजेंस प्लेटफॉर्म",
+  "disaggregation": "भार पृथक्करण (लोड डिसएग्रीगेशन)",
+  "recommendations": "कार्रवाई योग्य परिचालन सिफारिशें",
+  "causes": "मूल कारण का पता लगाना",
+  "evidence": "विस्तृत साक्ष्य (ड्रिल-डाउन)",
+  "verification": "आधार रेखा बनाम सत्यापित ऊर्जा बचत",
+  "freshness_live": "डेटा लाइव है",
+  "freshness_stale": "डेटा पुराना (स्टेल) है",
+  "freshness_missing": "डेटा अनुपलब्ध है",
+  "roles": {
+    "operations": "परिचालन कर्मचारी (Operations)",
+    "manager": "माइक्रोग्रिड प्रबंधक (Manager)",
+    "technician": "तकनीशियन (Technician)",
+    "resident": "निवासी / गैर-तकनीकी उपयोगकर्ता (Resident)"
+  }
+}

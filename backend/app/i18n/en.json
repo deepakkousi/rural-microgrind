@@ -1,0 +1,17 @@
+{
+  "title": "Rural Microgrid Intelligence Platform",
+  "disaggregation": "Load Disaggregation",
+  "recommendations": "Actionable Operational Recommendations",
+  "causes": "Root Cause Detection",
+  "evidence": "Drill-Down Evidence",
+  "verification": "Baseline vs. Verified Energy Reduction",
+  "freshness_live": "Data is LIVE",
+  "freshness_stale": "Data is STALE",
+  "freshness_missing": "Data is MISSING",
+  "roles": {
+    "operations": "Operations Staff",
+    "manager": "Microgrid Manager",
+    "technician": "Technician",
+    "resident": "Resident / Non-Technical User"
+  }
+}

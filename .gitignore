@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/__pycache__/
+backend/app/__pycache__/
+backend/app/*/__pycache__/
+backend/tests/__pycache__/
+.pytest_cache/
+
+# Build outputs
+frontend/dist/
+*.pyc
+
+# Environment & OS
+.DS_Store
+Thumbs.db
+.env
+*.log
