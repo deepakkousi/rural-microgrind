@@ -6,28 +6,41 @@ export default function ExperimentsPage({ lang }) {
     {
       id: "INT_01",
       name: "Water Pump Peak Tariff Shift",
+      type: "COST_REDUCTION",
       equipment: "Overhead Tank Water Pump (7.5 kW)",
-      baseline: "Runs during Peak Tariff (5 PM - 7 PM @ ₹12.0/kWh). Daily cost: ₹172.80.",
+      baseline: "Runs during Peak Tariff (5 PM - 7 PM @ ₹12.0/kWh). Baseline draw: 16.5 kWh/day.",
       intervention: "Reconfigure timer to run during Off-Peak Tariff (10 PM - 2 AM @ ₹4.5/kWh).",
-      result: "Energy draw remains identical (14.4 kWh/day), but monthly electricity bill drops by ₹3,240.",
+      result: "Energy draw remains identical (16.5 kWh/day, 0.0 kWh/d energy reduction), but electricity bill drops by ₹105.82/day (₹3,174.60/month).",
       status: "VERIFIED IN TELEMETRY"
     },
     {
       id: "INT_02",
       name: "HVAC Low-Occupancy Setback Control",
+      type: "ENERGY_REDUCTION",
       equipment: "Academic Block HVAC Chillers (25.0 kW)",
-      baseline: "Runs at 100% full capacity (21.4 kW) continuously from 8 AM to 6 PM regardless of room occupancy.",
-      intervention: "Automated setback control lowers chiller output to 7.0 kW when occupancy drops below 25% (lunch hours & late afternoon).",
-      result: "Reduces HVAC energy consumption by 93 kWh/day, saving ₹23,715/month.",
+      baseline: "Runs continuously from 8 AM to 6 PM (220.5 kWh/day) regardless of room occupancy.",
+      intervention: "Automated setback control lowers chiller output when occupancy drops below 25%.",
+      result: "Verified energy reduction of 73.7 kWh/day (from 220.5 to 146.8 kWh/day), saving ₹644.71/day (₹19,341.30/month).",
       status: "VERIFIED IN TELEMETRY"
     },
     {
       id: "INT_03",
       name: "Workshop CNC Machine Shift away from Peak",
+      type: "COST_REDUCTION",
       equipment: "Heavy Workshop CNC Machine (12.0 kW)",
-      baseline: "Heavy practical machining classes scheduled between 2 PM and 5 PM (Peak Tariff @ ₹12.0/kWh).",
-      intervention: "Reschedule machining classes to morning shoulder tariff window (9 AM - 1 PM @ ₹7.0/kWh).",
-      result: "Eliminates peak tariff surcharge, saving ₹5,625/month.",
+      baseline: "Heavy practical machining classes scheduled during Peak Tariff (47.9 kWh/day @ ₹12.0/kWh).",
+      intervention: "Reschedule machining classes to morning shoulder tariff window (9 AM - 12 PM @ ₹7.0/kWh).",
+      result: "Energy draw remains constant (48.1 kWh/day, 0.0 kWh/d energy reduction), saving ₹179.49/day (₹5,384.70/month).",
+      status: "VERIFIED IN TELEMETRY"
+    },
+    {
+      id: "INT_04",
+      name: "Classroom Lighting Low-Occupancy Dimming",
+      type: "ENERGY_REDUCTION",
+      equipment: "Classroom & Lab Lighting (6.0 kW)",
+      baseline: "Lights remain fully powered across academic blocks (153.9 kWh/day).",
+      intervention: "Automated 50% lighting dimming via occupancy sensors during low room utilization (< 25%).",
+      result: "Verified energy reduction of 9.2 kWh/day (from 153.9 to 144.7 kWh/day), saving ₹76.48/day (₹2,294.40/month).",
       status: "VERIFIED IN TELEMETRY"
     }
   ];
