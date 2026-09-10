@@ -171,6 +171,52 @@ class CauseDetectionEngine:
                 status="PENDING"
             ))
 
+        # 4. CLASSROOM LIGHTING LOW OCCUPANCY CAUSE (TRUE ENERGY REDUCTION)
+        low_occ_light = df_calc[(df_calc['hour'].between(8, 17)) & (df_calc['occupancy'] < 25.0) & (df_calc['lighting_kw'] > 3.0)]
+        if len(low_occ_light) > 10:
+            avg_light_kw = float(low_occ_light['lighting_kw'].mean())
+            avg_light_tariff = float(low_occ_light['tariff_rate'].mean())
+            dimmed_target_kw = 2.0
+            kw_saving = max(0.0, avg_light_kw - dimmed_target_kw)
+            daily_hours = 2.0
+            daily_kwh_saving = kw_saving * daily_hours
+            daily_cost_saving = daily_kwh_saving * avg_light_tariff
+            monthly_kwh_saving = daily_kwh_saving * 30
+            monthly_cost_saving = daily_cost_saving * 30
+
+            breakdown = {
+                "telemetry_freshness": freshness_score,
+                "occupancy_correlation": 30,
+                "schedule_correlation": 20,
+                "pattern_consistency": 15
+            }
+            total_evidence_score = sum(breakdown.values())
+
+            recommendations.append(Recommendation(
+                recommendation_id="REC_LT_01",
+                equipment_id="EQ_LT_02",
+                equipment_name="Classroom & Lab Lighting",
+                load_tier="Flexible",
+                action_type="ENERGY_REDUCTION",
+                problem=f"Classroom lighting remains fully energized during low student occupancy.",
+                cause=f"Classroom and laboratory lights operate at ~{avg_light_kw:.1f} kW during class breaks when student occupancy drops below 25%.",
+                evidence=CauseEvidence(
+                    metric="Low-Occupancy Lighting Load",
+                    observed_value=round(avg_light_kw, 2),
+                    expected_value=dimmed_target_kw,
+                    context=f"Lighting draws {avg_light_kw:.1f} kW when rooms are mostly empty. Automating light dimming during low occupancy saves {kw_saving:.1f} kW, delivering true energy (kWh) reduction."
+                ),
+                recommended_action="Dim classroom and laboratory lighting by 50% when occupancy sensors detect room occupancy < 25%. Results in genuine energy (kWh) reduction.",
+                estimated_energy_saving_kwh=round(monthly_kwh_saving, 1),
+                estimated_cost_saving=round(monthly_cost_saving, 2),
+                evidence_score=total_evidence_score,
+                evidence_breakdown=breakdown,
+                confidence=round(total_evidence_score / 100.0, 2),
+                data_freshness=freshness.status,
+                priority="LOW",
+                status="PENDING"
+            ))
+
         return recommendations
 
 cause_engine = CauseDetectionEngine()

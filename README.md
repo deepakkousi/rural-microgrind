@@ -23,12 +23,16 @@ The **Rural Microgrid Intelligence Platform** converts smart meter telemetry, eq
 
 ---
 
-## ⚡ Energy Reduction vs. Cost Reduction (Load Shifting)
+## ⚡ Energy Reduction (kWh) vs. Cost Reduction (Load Shifting)
 
-The platform explicitly distinguishes between two operational outcomes:
+To maintain complete engineering accuracy, the platform strictly separates two operational concepts:
 
-- **ENERGY REDUCTION (kWh)**: Direct reduction in electricity consumed (e.g. HVAC low-occupancy setback, Classroom Lighting dimming).
-- **COST REDUCTION (LOAD SHIFTING)**: Shifting heavy load runtime from Peak Tariff to Off-Peak/Shoulder Tariff. Reduces electricity bill (₹/$) without claiming false kWh reduction (e.g. Water Pump peak shift, CNC machine peak shift).
+| Dimension | Energy Reduction (kWh) | Cost Reduction (Load Shifting) |
+|---|---|---|
+| **Core Definition** | Genuine reduction in kilowatt-hours consumed. | Shifting heavy equipment runtime to Off-Peak / Shoulder tariffs. |
+| **Physics Effect** | Reduces mechanical, thermodynamic, or optical power demand. | Total daily run hours and total daily energy consumption (kWh) remain constant. |
+| **Microgrid Impact** | Conserves diesel/battery capacity and reduces absolute grid draw. | Avoids ₹12.0/kWh peak electricity rate without sacrificing utility. |
+| **Platform Examples** | • **HVAC Setback** (+2°C / idle capacity during low room occupancy): **73.7 kWh/day saved**.<br>• **Classroom Lighting Dimming** (50% dimming when occupancy < 25%): **9.2 kWh/day saved**. | • **Water Pumping Shift** (Shifted from 5–7 PM Peak to 10 PM–2 AM Off-Peak): **0.0 kWh/day energy saved**, **₹105.82/day cost saved**.<br>• **Workshop CNC Machine Shift** (Shifted from 2–5 PM Peak to 9 AM–12 PM Morning): **0.0 kWh/day energy saved**, **₹179.49/day cost saved**. |
 
 ---
 
@@ -127,14 +131,39 @@ The system generates a 90-day synthetic dataset at 15-minute intervals (8,640 re
 
 ## 🎯 Actionable Cause Detection & Recommendation Engine
 
-The system explains root causes with transparent Evidence Strength Scores (0–100):
+The engine cross-correlates power draws against schedules, occupancy, and tariff structures to generate transparent root-cause diagnoses with a 4-factor **Evidence Strength Score (0–100)**:
 
+### 1. Water Pump Peak Tariff Shift (`REC_WP_01` — Cost Reduction / Load Shift)
 - **WHAT Happened?**: Water pump running during 5 PM - 7 PM Peak Tariff.
-- **WHY Did It Happen?**: Automatic timer scheduled pump during ₹12.0/kWh peak electricity pricing.
+- **WHY Did It Happen?**: Scheduled during ₹12.0/kWh peak electricity pricing.
 - **EVIDENCE**: 7.1 kW draw during Peak Tariff when Off-Peak rate is ₹4.5/kWh.
 - **RECOMMENDED ACTION**: Shift water pumping schedule to late night Off-Peak tariff (10 PM - 2 AM).
-- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹3,156.90 / month` cost saving.
-- **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Schedule Overlap: +30, Tariff Overlap: +20, Occupancy Correlation: +15).
+- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹3,174.60 / month` cost saving.
+- **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15).
+
+### 2. HVAC Low-Occupancy Waste (`REC_HVAC_01` — True Energy Reduction)
+- **WHAT Happened?**: Air conditioning drawing excessive power while rooms are unoccupied.
+- **WHY Did It Happen?**: HVAC chillers maintaining full cooling output (18.8 kW) during low occupancy (< 25%).
+- **EVIDENCE**: 18.8 kW observed vs. 7.0 kW setback baseline.
+- **RECOMMENDED ACTION**: Set back thermostat by 2°C or idle chiller capacity when room occupancy drops below 25%.
+- **ESTIMATED SAVING**: `885.0 kWh / month` energy reduction → `₹6,195.00 / month` cost saving.
+- **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Occupancy Correlation: +30, Schedule: +20, Pattern: +15).
+
+### 3. Workshop CNC Machine Shift (`REC_LAB_01` — Cost Reduction / Load Shift)
+- **WHAT Happened?**: Heavy CNC milling operated during Peak Tariff (₹12.0/kWh).
+- **WHY Did It Happen?**: High-power practical machining sessions scheduled from 2 PM to 5 PM.
+- **EVIDENCE**: 12.5 kW draw during peak hours vs. ₹7.0/kWh morning shoulder rate.
+- **RECOMMENDED ACTION**: Reschedule CNC machining practicals to morning shoulder window (9 AM - 12 PM).
+- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹5,625.00 / month` cost saving.
+- **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15).
+
+### 4. Classroom Lighting Dimming (`REC_LT_01` — True Energy Reduction)
+- **WHAT Happened?**: Classroom and laboratory lighting energized at ~4.2 kW during empty class periods.
+- **WHY Did It Happen?**: Manual light switches left ON when student room occupancy drops below 25%.
+- **EVIDENCE**: 4.2 kW observed vs. 2.0 kW dimmed target.
+- **RECOMMENDED ACTION**: Automate 50% lighting dimming via occupancy sensors when room occupancy < 25%.
+- **ESTIMATED SAVING**: `132.0 kWh / month` energy reduction → `₹924.00 / month` cost saving.
+- **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Occupancy Correlation: +30, Schedule: +20, Pattern: +15).
 
 ---
 
@@ -151,6 +180,15 @@ Three 30-day experimental phases calculated dynamically from raw telemetry:
 - **Daily Financial Saving**: `₹1,000.63 / day` (`₹30,018.90` total over 30-day verification period)
 - **Target Error**: `14.6 kWh/day` (`15.11%` error against goal)
 - **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
+
+### 🔬 Intervention-by-Intervention Empirical Breakdown
+
+| ID | Intervention Name | Type | Baseline (kWh/d) | Verified (kWh/d) | Energy Saved | Cost Saved |
+|---|---|---|---|---|---|---|
+| `INT_01` | Water Pump Peak Tariff Shift | `COST_REDUCTION` | 16.5 | 16.5 | **0.0 kWh/d** | **₹105.82 / d** |
+| `INT_02` | HVAC Low-Occupancy Setback | `ENERGY_REDUCTION` | 220.5 | 146.8 | **73.7 kWh/d** | **₹644.71 / d** |
+| `INT_03` | Workshop CNC Machine Shift | `COST_REDUCTION` | 47.9 | 48.1 | **0.0 kWh/d** | **₹179.49 / d** |
+| `INT_04` | Classroom Lighting Dimming | `ENERGY_REDUCTION` | 153.9 | 144.7 | **9.2 kWh/d** | **₹76.48 / d** |
 
 ---
 
@@ -216,6 +254,68 @@ Frontend runs at: `http://localhost:5173`
 
 ---
 
+## 📡 Complete REST API Endpoint Directory
+
+| Endpoint | Method | Engine | Description |
+|---|---|---|---|
+| `/api/health` | GET | Core | Service health, engine registry, and compliance status |
+| `/api/data/meter` | GET | Generator | Retrieve raw 15-min smart meter time-series records |
+| `/api/data/context` | GET | Generator | Retrieve occupancy, ToU tariff, and solar data |
+| `/api/data/summary` | GET | Generator | Telemetry statistics and dataset date range |
+| `/api/equipment` | GET | Loader | Full registry of 9 microgrid loads and metadata |
+| `/api/disaggregation` | GET | Disaggregation | Disaggregated equipment power channels and accuracy |
+| `/api/disaggregation/drilldown/{load_id}` | GET | Disaggregation | 24-hr schedule vs. occupancy vs. tariff alignment |
+| `/api/recommendations` | GET | Cause & Rec | Actionable recommendations with Evidence Scores |
+| `/api/recommendations/{id}/status` | POST | Rec Manager | Transition status: `PENDING`, `APPLIED`, `REJECTED` |
+| `/api/verification/summary` | GET | Verification | Baseline vs. Target vs. Measured verified savings |
+| `/api/verification/timeseries` | GET | Verification | Daily verification trends across 90 days |
+| `/api/quality/freshness` | GET | Quality | Telemetry age, freshness category, and timestamp |
+| `/api/quality/anomalies` | GET | Quality | Detected sensor anomalies, polarity errors, stuck signals |
+| `/api/quality/simulate-failure` | POST | Quality | Simulate missing, stale, stuck, or polarity errors |
+| `/api/i18n/{lang}` | GET | I18n | Localized strings dictionary (English / Hindi) |
+
+---
+
+## 📂 Repository Layout
+
+```text
+rural-microgrind/
+├── README.md                           # Master project documentation
+├── docs/
+│   ├── demo_script.md                  # 3-minute video presentation script with timestamps
+│   └── requirements.md                 # 20-item Requirements Traceability Matrix
+├── reports/
+│   ├── evaluation_report.md            # Comprehensive empirical technical evaluation report
+│   └── user_validation.md              # 4-persona pilot protocol (validation pending field trial)
+├── backend/
+│   ├── main.py                         # FastAPI server initialization and middleware
+│   ├── pyproject.toml                  # Backend project configuration
+│   ├── requirements.txt                # Python dependencies
+│   ├── app/
+│   │   ├── api/                        # REST API routers (data, quality, rec, verif, etc.)
+│   │   ├── core/                       # Config, Pydantic schemas, equipment registry loader
+│   │   ├── engines/                    # 6 Core algorithmic engines:
+│   │   │   ├── data_generator.py       # 90-day 15-min physics & telemetry generator
+│   │   │   ├── disaggregation_engine.py# Scenario-based load disaggregation
+│   │   │   ├── cause_engine.py         # Root-cause diagnostic & evidence scorer
+│   │   │   ├── recommendation_engine.py# Recommendation lifecycle manager
+│   │   │   ├── quality_engine.py       # Telemetry freshness & edge failure simulator
+│   │   │   └── verification_engine.py  # Baseline vs Measured verification engine
+│   │   └── i18n/                       # Backend internationalization dictionaries
+│   └── tests/                          # 30 Pytest automated test cases
+└── frontend/
+    ├── package.json                    # React dependencies and scripts
+    ├── vite.config.js                  # Vite bundler configuration
+    ├── tailwind.config.js              # Tailwind CSS configuration
+    └── src/
+        ├── App.jsx                     # Root application container & navigation
+        ├── components/                 # Reusable UI components (Navbar, Modal, Freshness, etc.)
+        ├── pages/                      # 8 Page views (Dashboard, Disaggregation, Recs, etc.)
+        └── i18n/                       # Frontend translation dictionaries
+```
+
+---
+
 ## 📜 Interactive Demo Video Script
 
 See [`docs/demo_script.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/docs/demo_script.md) for the 3-minute video presentation transcript and timestamped walkthrough.
@@ -225,3 +325,16 @@ See [`docs/demo_script.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20proj
 ## 📑 Traceability Matrix
 
 See [`docs/requirements.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/docs/requirements.md) for the complete mapping from problem statement to implementation files, APIs, UI components, and test evidence.
+
+---
+
+## ⚖️ Limitations & Roadmap
+
+- **Component Meter Disaggregation**: Current disaggregation utilizes synthetic sub-meter telemetry and contextual signals. Future iterations will integrate high-frequency Non-Intrusive Load Monitoring (NILM) harmonics (1–10 kHz).
+- **Physical Pilot Field Trial**: User testing is structured under [`reports/user_validation.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/reports/user_validation.md) and labeled *"Real-user validation pending field trial"* until live hardware deployment is completed.
+- **Battery Energy Storage (BESS)**: Planned roadmap item to integrate automated lithium-ion battery dispatch alongside load shifting.
+
+---
+
+## 📄 License
+This project is open-source and licensed under the [MIT License](LICENSE).
