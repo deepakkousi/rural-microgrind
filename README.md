@@ -317,22 +317,22 @@ rural-microgrind/
 
 ---
 
-## 📜 Interactive Demo Video Script
+## 📜 Interactive Demo Presentation & Script
 
-See [`docs/demo_script.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/docs/demo_script.md) for the 3-minute video presentation transcript and timestamped walkthrough.
+See [`docs/demo_script.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/docs/demo_script.md) for the 3-minute video presentation transcript, timestamped screen navigation guide, and narrator cues (live video recording pending).
 
 ---
 
 ## 📑 Traceability Matrix
 
-See [`docs/requirements.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/docs/requirements.md) for the complete mapping from problem statement to implementation files, APIs, UI components, and test evidence.
+See [`docs/requirements.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/docs/requirements.md) for the complete mapping from problem statement to implementation files, APIs, UI components, test evidence, and status (`PASS` / `PARTIAL` / `PENDING`).
 
 ---
 
 ## ⚖️ Limitations & Roadmap
 
 - **Component Meter Disaggregation**: Current disaggregation utilizes synthetic sub-meter telemetry and contextual signals. Future iterations will integrate high-frequency Non-Intrusive Load Monitoring (NILM) harmonics (1–10 kHz).
-- **Physical Pilot Field Trial**: User testing is structured under [`reports/user_validation.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/reports/user_validation.md) and labeled *"Real-user validation pending field trial"* until live hardware deployment is completed.
+- **Representative User Validation**: User testing protocol is formalized under [`reports/user_validation.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/reports/user_validation.md) and labeled *"PENDING — representative-user validation not yet conducted"* until live hardware deployment.
 - **Battery Energy Storage (BESS)**: Planned roadmap item to integrate automated lithium-ion battery dispatch alongside load shifting.
 
 ---

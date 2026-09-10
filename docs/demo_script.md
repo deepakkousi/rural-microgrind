@@ -1,5 +1,8 @@
 # 3-Minute Video Demo Script — Rural Microgrid Intelligence Platform
 
+> [!NOTE]
+> **Status: Demo script and screen walkthrough available; live video recording pending.**
+
 This document provides a precise, timestamped narration and screen navigation guide for recording a 3-minute video demonstration of the working Rural Microgrid Intelligence Platform prototype.
 
 ---
