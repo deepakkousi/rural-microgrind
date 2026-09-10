@@ -19,7 +19,16 @@ The **Rural Microgrid Intelligence Platform** converts smart meter telemetry, eq
 2. Plain-language root cause explanations (WHAT, WHY, EVIDENCE).
 3. Actionable operational recommendations.
 4. Empirical **Baseline → Target → Measured → Verified Energy Reduction** experiments.
-5. Role-based views (Operations, Manager, Technician, Resident) with multi-language (English/Hindi) and WCAG accessibility support.
+5. Role-based views (Operations, Manager, Technician, Resident) with multi-language (English/Hindi) and WCAG accessibility checks.
+
+---
+
+## ⚡ Energy Reduction vs. Cost Reduction (Load Shifting)
+
+The platform explicitly distinguishes between two operational outcomes:
+
+- **ENERGY REDUCTION (kWh)**: Direct reduction in electricity consumed (e.g. HVAC low-occupancy setback, Classroom Lighting dimming).
+- **COST REDUCTION (LOAD SHIFTING)**: Shifting heavy load runtime from Peak Tariff to Off-Peak/Shoulder Tariff. Reduces electricity bill (₹/$) without claiming false kWh reduction (e.g. Water Pump peak shift, CNC machine peak shift).
 
 ---
 
@@ -71,14 +80,14 @@ The **Rural Microgrid Intelligence Platform** converts smart meter telemetry, eq
                                   ┌──────────────────────┐
                                   │ Verified Energy      │
                                   │ Reduction            │
-                                  └──────────────────────┘
+                                  └──────────┘
 ```
 
 ---
 
 ## 📊 Dataset Schema (90-Day Telemetry)
 
-The system generates a realistic 90-day dataset at 15-minute intervals (8,640 records).
+The system generates a 90-day synthetic dataset at 15-minute intervals (8,640 records).
 
 | Column Name | Data Type | Description |
 |---|---|---|
@@ -109,37 +118,39 @@ The system generates a realistic 90-day dataset at 15-minute intervals (8,640 re
 ### Methodology
 *"Scenario-based synthetic load disaggregation using known component meter channels, equipment schedules, and contextual signals."*
 
-### Benchmark Accuracy Metrics
-- **Mean Absolute Error (MAE)**: `0.239 kW`
-- **Root Mean Square Error (RMSE)**: `0.301 kW`
-- **Mean Absolute Percentage Error (MAPE)**: `1.84%`
+### Empirical Accuracy Metrics
+- **Mean Absolute Error (MAE)**: `0.243 kW`
+- **Root Mean Square Error (RMSE)**: `0.304 kW`
+- **Mean Absolute Percentage Error (MAPE)**: `1.15%`
 
 ---
 
 ## 🎯 Actionable Cause Detection & Recommendation Engine
 
-The system does not merely state consumption; it explains root causes:
+The system explains root causes with transparent Evidence Strength Scores (0–100):
 
 - **WHAT Happened?**: Water pump running during 5 PM - 7 PM Peak Tariff.
 - **WHY Did It Happen?**: Automatic timer scheduled pump during ₹12.0/kWh peak electricity pricing.
-- **EVIDENCE**: 7.2 kW draw during Peak Tariff when Off-Peak rate is ₹4.5/kWh.
+- **EVIDENCE**: 7.1 kW draw during Peak Tariff when Off-Peak rate is ₹4.5/kWh.
 - **RECOMMENDED ACTION**: Shift water pumping schedule to late night Off-Peak tariff (10 PM - 2 AM).
-- **ESTIMATED SAVING**: `14.4 kWh/day` shifted → `₹3,240 / month` cost saving.
-- **CONFIDENCE**: `95%` (under LIVE data).
+- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹3,156.90 / month` cost saving.
+- **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Schedule Overlap: +30, Tariff Overlap: +20, Occupancy Correlation: +15).
 
 ---
 
-## 📈 Baseline vs. Verified Energy Reduction Experiment
+## 📈 Baseline vs. Measured Energy Reduction Experiment
 
-Three 30-day experimental phases in raw telemetry:
-- **BASELINE (Days 1–30)**: Suboptimal scheduling (`1,425.0 kWh/day` average).
-- **INTERVENTION (Days 31–60)**: Schedule changes deployed.
-- **VERIFICATION (Days 61–90)**: Measured post-action telemetry (`1,192.0 kWh/day` average).
+Three 30-day experimental phases calculated dynamically from raw telemetry:
+- **BASELINE (Days 1–30)**: `658.9 kWh/day` average
+- **TARGET (15% Goal Target)**: `560.1 kWh/day` (Target Reduction: `98.8 kWh/day`)
+- **MEASURED (Days 61–90)**: `559.2 kWh/day`
+- **VERIFIED REDUCTION**: `99.7 kWh/day` (`15.13%` reduction)
+- **TARGET ACHIEVEMENT RATIO**: `100.9%`
 
-### Measured Verified Savings
-$$\text{Verified Reduction} = 1425.0 - 1192.0 = 233.0\text{ kWh/day }(16.35\%)$$
-$$\text{Financial Saving} = ₹2,097.00\text{ / day } (₹62,910.00\text{ total over 30 days})$$
-$$\text{Measurement Uncertainty} = \pm 1.8\%\text{ (Bounds: 228.8 to 237.2 kWh/day)}$$
+### Measured Financial Savings & Error Analysis
+- **Daily Financial Saving**: `₹1,123.73 / day` (`₹33,711.90` total over 30-day verification period)
+- **Target Error**: `0.9 kWh/day` (`0.91%` absolute percentage error)
+- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `97.9 kWh/day`, upper bound: `101.5 kWh/day`.
 
 ---
 
@@ -155,20 +166,22 @@ $$\text{Measurement Uncertainty} = \pm 1.8\%\text{ (Bounds: 228.8 to 237.2 kWh/d
 ## 🛡 Data Quality & Edge Failure Simulator
 
 Handles 4 freshness states: `LIVE` (<15m), `STALE` (15m–2h), `VERY_STALE` (>2h), `MISSING`.
+- Telemetry > 2 hours (`VERY_STALE`) pauses recommendations.
+- Missing telemetry (`MISSING`) disables recommendations and displays data unavailable notice.
 
 Supported & Tested Edge Cases:
-1. **Missing Meter Data**: Disables unsafe recommendations, shows critical alert banner.
-2. **Stale Telemetry**: Shows warning badge, downgrades recommendation confidence.
+1. **Missing Meter Data**: Disables unsafe recommendations, returns `DATA_UNAVAILABLE` status.
+2. **Stale Telemetry**: Shows warning badge, downgrades evidence strength score.
 3. **Stuck Sensor**: Detects flatline transducer reading (>2h constant value).
 4. **Negative Meter Reading**: Flags CT polarity inversion error (-12.5 kW).
-5. **Tariff Revision**: Adapts to critical peak surcharge (₹18.5/kWh).
+5. **Tariff Revision**: Dynamically recalculates cost savings under critical peak surcharge (₹18.5/kWh).
 
 ---
 
-## 🌐 Language & Accessibility Support
+## 🌐 Language & Accessibility Checks
 
 - **Languages**: English (`en`) and Hindi (`hi`) translation toggle.
-- **Accessibility**: WCAG 2.1 AA compliant (keyboard focus rings, high contrast >4.5:1, ARIA labels, non-color-only badges).
+- **Accessibility Checks**: Keyboard focus indicators (`focus-visible:ring-2`), contrast ratio > 4.5:1, screen reader labels, non-color-only badges.
 
 ---
 

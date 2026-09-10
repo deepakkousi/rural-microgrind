@@ -16,8 +16,8 @@ def test_recommendations_generation():
     df = generate_microgrid_dataset()
     recs = recommendation_manager.get_all_recommendations(df)
     for r in recs:
-        assert r.estimated_energy_saving_kwh > 0
-        assert r.estimated_cost_saving > 0
+        assert r.estimated_energy_saving_kwh >= 0.0 # Load shifts have 0.0 kWh energy reduction
+        assert r.estimated_cost_saving > 0.0
         assert r.confidence > 0.5
         assert r.status in ["PENDING", "APPLIED", "REJECTED"]
 

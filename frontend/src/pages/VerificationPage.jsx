@@ -19,13 +19,25 @@ export default function VerificationPage({ lang }) {
   }, []);
 
   if (loading) return <div className="py-12 text-center text-slate-400">Loading energy reduction verification model...</div>;
-  if (!summary) return <div className="py-12 text-center text-rose-400">Failed to load verification experiment summary.</div>;
+
+  if (!summary || summary.status === "DATA_UNAVAILABLE") {
+    return (
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center max-w-2xl mx-auto my-12">
+        <AlertCircle className="h-10 w-10 text-rose-400 mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-white mb-1">Verification Unavailable</h3>
+        <p className="text-sm text-slate-400 mb-4">{summary ? summary.message : "Insufficient meter data to compute baseline verification."}</p>
+        <div className="bg-slate-950 p-3 rounded text-xs font-mono text-slate-500 border border-slate-800">
+          Verification unavailable — insufficient meter data.
+        </div>
+      </div>
+    );
+  }
 
   const summaryFlow = [
-    { stage: 'BASELINE', label: 'Days 1 - 30', val: `${summary.baseline_daily_avg_kwh} kWh/day`, color: 'border-slate-700 bg-slate-900 text-slate-200' },
-    { stage: 'TARGET', label: 'Expected Baseline', val: `${summary.target_daily_avg_kwh} kWh/day`, color: 'border-indigo-500/40 bg-indigo-950/40 text-indigo-300' },
-    { stage: 'MEASURED', label: 'Days 61 - 90', val: `${summary.measured_daily_avg_kwh} kWh/day`, color: 'border-sky-500/40 bg-sky-950/40 text-sky-300' },
-    { stage: 'VERIFIED REDUCTION', label: 'Measured Saving', val: `${summary.verified_reduction_kwh_day} kWh/day (${summary.verified_reduction_pct}%)`, color: 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300 font-bold' }
+    { stage: 'BASELINE', label: 'Days 1 - 30 (Historical)', val: `${summary.baseline_daily_avg_kwh} kWh/day`, color: 'border-slate-700 bg-slate-900 text-slate-200' },
+    { stage: 'TARGET', label: '15% Goal Target', val: `${summary.target_daily_avg_kwh} kWh/day`, color: 'border-indigo-500/40 bg-indigo-950/40 text-indigo-300' },
+    { stage: 'MEASURED', label: 'Days 61 - 90 (Actual)', val: `${summary.measured_daily_avg_kwh} kWh/day`, color: 'border-sky-500/40 bg-sky-950/40 text-sky-300' },
+    { stage: 'VERIFIED REDUCTION', label: 'Measured Energy Saving', val: `${summary.verified_reduction_kwh_day} kWh/day (${summary.verified_reduction_pct}%)`, color: 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300 font-bold' }
   ];
 
   return (
@@ -39,7 +51,7 @@ export default function VerificationPage({ lang }) {
           <div>
             <h2 className="text-xl font-bold text-white">Baseline vs. Measured Energy Reduction Experiment</h2>
             <p className="text-xs text-slate-400 mt-1">
-              Empirical IPMVP-aligned operational intervention experiment across 90 days of 15-minute smart meter telemetry.
+              Empirical historical baseline model across 90 days of 15-minute smart meter telemetry.
             </p>
           </div>
         </div>
@@ -67,63 +79,60 @@ export default function VerificationPage({ lang }) {
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <span className="text-xs text-slate-400 block font-mono uppercase">Uncertainty / Error Bounds</span>
-          <div className="text-2xl font-bold text-sky-400 mt-1 font-mono">±{summary.measurement_error_margin_pct}%</div>
-          <p className="text-xs text-slate-500 mt-1">
-            Confidence Interval: {summary.lower_bound_kwh} to {summary.upper_bound_kwh} kWh/day
-          </p>
+          <span className="text-xs text-slate-400 block font-mono uppercase">Target Achievement Ratio</span>
+          <div className="text-3xl font-bold text-sky-400 mt-1 font-mono">{summary.target_achievement_pct}%</div>
+          <p className="text-xs text-slate-500 mt-1">Target Reduction: {summary.error_analysis.target_reduction_kwh_day} kWh/day</p>
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <span className="text-xs text-slate-400 block font-mono uppercase">Active Experiment Phase</span>
-          <div className="text-2xl font-bold text-indigo-400 mt-1 font-mono">VERIFICATION (Day 61-90)</div>
-          <p className="text-xs text-slate-500 mt-1">3 Interventions active and empirically validated in raw telemetry.</p>
+          <span className="text-xs text-slate-400 block font-mono uppercase">Error Analysis & Uncertainty</span>
+          <div className="text-xl font-bold text-indigo-400 mt-1 font-mono">Err: {summary.error_analysis.absolute_error_kwh} kWh ({summary.error_analysis.percentage_error}%)</div>
+          <p className="text-xs text-slate-500 mt-1">{summary.error_analysis.sensor_uncertainty}</p>
         </div>
       </div>
 
-      {/* Daily Consumption Trend Comparison Chart */}
+      {/* Applied Interventions Evaluation Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-        <h3 className="font-bold text-white text-base mb-3">90-Day Daily Energy Consumption Profile (Baseline vs Verification)</h3>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={timeseries}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="day" stroke="#64748b" label={{ value: 'Day Index (1 - 90)', position: 'insideBottom', offset: -5 }} />
-              <YAxis stroke="#64748b" unit=" kWh" />
-              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }} />
-              <Bar dataKey="total_kwh" fill="#0284c7" name="Daily Total Consumption (kWh)" />
-              <Bar dataKey="hvac_kwh" fill="#6366f1" name="HVAC Daily Consumption (kWh)" />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-bold text-white text-lg">Operational Interventions Evaluation</h3>
+            <p className="text-xs text-slate-400">Explicitly distinguishes Energy Reduction (kWh) from Cost Reduction (Load Shift).</p>
+          </div>
         </div>
-      </div>
 
-      {/* Applied Interventions Summary Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-        <h3 className="font-bold text-white text-lg mb-4">Operational Interventions Evaluation</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
             <thead className="bg-slate-950 text-slate-400 uppercase text-xs font-mono">
               <tr>
                 <th className="px-4 py-3">Intervention</th>
-                <th className="px-4 py-3">Target Equipment</th>
-                <th className="px-4 py-3">Operational Policy Modification</th>
-                <th className="px-4 py-3 font-right">Daily Cost Saving</th>
-                <th className="px-4 py-3 text-right">Verification Status</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Energy Impact (kWh/day)</th>
+                <th className="px-4 py-3 font-right">Cost Impact (₹/day)</th>
+                <th className="px-4 py-3">Explanation</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {summary.interventions_applied.map((int) => (
                 <tr key={int.id} className="hover:bg-slate-800/30 transition">
-                  <td className="px-4 py-3 font-semibold text-white">{int.name}</td>
-                  <td className="px-4 py-3 text-slate-400">{int.target_equipment}</td>
-                  <td className="px-4 py-3 text-slate-300">{int.action}</td>
-                  <td className="px-4 py-3 font-mono text-emerald-400 font-bold">₹{int.cost_saving_daily_inr}/day</td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold rounded inline-flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> VERIFIED
+                  <td className="px-4 py-3 font-semibold text-white">
+                    {int.name}
+                    <span className="block text-xs text-slate-500">{int.target_equipment}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 text-xs font-bold rounded ${
+                      int.type === 'ENERGY_REDUCTION' ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30' :
+                      'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    }`}>
+                      {int.type === 'ENERGY_REDUCTION' ? 'ENERGY REDUCTION' : 'COST REDUCTION (LOAD SHIFT)'}
                     </span>
                   </td>
+                  <td className="px-4 py-3 font-mono font-bold text-sky-400">
+                    {int.energy_saving_kwh_day > 0 ? `-${int.energy_saving_kwh_day} kWh` : '0 kWh (Load Shift)'}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-emerald-400 font-bold">
+                    -₹{int.cost_saving_daily_inr}/day
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-400">{int.explanation}</td>
                 </tr>
               ))}
             </tbody>

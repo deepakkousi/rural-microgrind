@@ -37,7 +37,7 @@ Raw Smart Meter Data (15-min) + Equipment Schedules + Occupancy + Tariff Rates
 ### **3. Architecture**
 - **Backend Framework**: Python 3.13 + FastAPI + Pandas + Pytest
 - **Frontend Framework**: React 18 + Vite + TailwindCSS + Recharts + Lucide-react
-- **Service Registration**: Dynamic single source of truth reporting 19 registered microservices via `/api/health`.
+- **Service & Engine Registration**: Health check reporting 6 core engines (`engine_count: 6`) and 19 total registered API services (`service_count: 19`).
 
 ---
 
@@ -50,10 +50,10 @@ Raw Smart Meter Data (15-min) + Equipment Schedules + Occupancy + Tariff Rates
 
 ### **5. Disaggregation Performance**
 - **Disaggregation Methodology**: Scenario-based synthetic load disaggregation using component meter channels, equipment schedules, and contextual signals.
-- **Evaluation Metrics against Benchmark**:
-  - **Mean Absolute Error (MAE)**: `0.239 kW`
-  - **Root Mean Square Error (RMSE)**: `0.301 kW`
-  - **Mean Absolute Percentage Error (MAPE)**: `1.84%`
+- **Empirical Evaluation Metrics against Benchmark**:
+  - **Mean Absolute Error (MAE)**: `0.243 kW`
+  - **Root Mean Square Error (RMSE)**: `0.304 kW`
+  - **Mean Absolute Percentage Error (MAPE)**: `1.15%`
 - **Load Tiers**:
   - Critical (Server Rack, Network): ~4.8 kW (16.2%)
   - Essential (Lighting, Water Pump, Kitchen): ~12.5 kW (42.2%)
@@ -62,22 +62,23 @@ Raw Smart Meter Data (15-min) + Equipment Schedules + Occupancy + Tariff Rates
 ---
 
 ### **6. Actionable Cause Detection**
-Detects 3 primary operational causes:
-1. **Water Pump Peak Tariff Shift**: Pump running 5 PM–7 PM during ₹12.0/kWh peak tariff.
-2. **HVAC Low-Occupancy Waste**: HVAC running at 21.4 kW while room occupancy < 20%.
-3. **Heavy Workshop Machining Shift**: CNC machine operating during ₹12.0/kWh peak tariff.
+Detects primary operational causes with transparent Evidence Strength Scores (0–100):
+1. **Water Pump Peak Tariff Shift** (COST REDUCTION): Pump running 5 PM–7 PM during ₹12.0/kWh peak tariff.
+2. **HVAC Low-Occupancy Waste** (ENERGY REDUCTION): HVAC running at ~21.4 kW while room occupancy < 25%.
+3. **Heavy Workshop Machining Shift** (COST REDUCTION): CNC machine operating during ₹12.0/kWh peak tariff.
+4. **Classroom Lighting Dimming** (ENERGY REDUCTION): Lighting active during low classroom utilization.
 
 ---
 
 ### **7. Recommendation Engine Performance**
-- Generates structured recommendations with confidence scores (0.88 - 0.95 under LIVE data), priority tags, and stateful status tracking (`PENDING`, `APPLIED`, `REJECTED`).
+- Generates structured recommendations with Evidence Strength Scores (0–100), priority tags, and stateful status tracking (`PENDING`, `APPLIED`, `REJECTED`).
 
 ---
 
 ### **8. Role-Based Views**
 Supports 4 distinct user roles:
 1. **Operations Staff**: Active alerts, current operational recommendations, real-time load status.
-2. **Microgrid Manager**: Financial metrics, tariff distribution, baseline vs. verified energy savings ($ and kWh).
+2. **Microgrid Manager**: Financial metrics, tariff distribution, baseline vs. verified energy savings ($ and ₹).
 3. **Technician**: Sensor health, telemetry freshness, failure simulation controls, granular equipment logs.
 4. **Resident / Non-Technical User**: Plain-language disaggregation summary, essential vs. flexible breakdown, simple recommendations.
 
@@ -91,26 +92,28 @@ Provides interactive 24-hour time series alignment overlaying Actual Load, Targe
 ### **10 & 11. Data Quality & Edge Failure Analysis**
 - **Freshness Categories**: `LIVE` (<15m), `STALE` (15m–2h), `VERY_STALE` (>2h), `MISSING`.
 - **Tested Failure Cases**:
-  1. *Missing Meter Data*: Triggers `MISSING` badge, disables unsafe recommendations, logs `MISSING_SIGNAL`.
-  2. *Stale Telemetry*: Downgrades freshness to `STALE`, updates age to 47 mins, reduces confidence score.
+  1. *Missing Meter Data*: Triggers `MISSING` badge, disables recommendations, returns `DATA_UNAVAILABLE` status.
+  2. *Stale Telemetry*: Downgrades freshness to `STALE`, updates age to 47 mins, reduces evidence strength score.
   3. *Stuck Sensor*: Detects flatline transducer reading, logs `FLATLINE_STUCK` alert.
   4. *Negative Meter Reading*: Detects CT polarity reversal (-12.5 kW), logs `POLARITY_ERROR` alert.
-  5. *Tariff Revision*: Adapts to critical peak surcharge (₹18.5/kWh).
+  5. *Tariff Revision*: Dynamically recalculates cost savings under critical peak surcharge (₹18.5/kWh).
 
 ---
 
 ### **12 – 15. Verified Energy Reduction & Error Analysis**
-- **Baseline Period (Days 1–30)**: `1,425.0 kWh/day` average
-- **Target Expectation**: `1,180.0 kWh/day`
-- **Measured Period (Days 61–90)**: `1,192.0 kWh/day`
-- **Verified Energy Reduction**: `233.0 kWh/day` (`16.35%` reduction)
-- **Verified Financial Saving**: `₹2,097.00/day` (`₹62,910.00` total over 30-day verification period)
-- **Uncertainty & Measurement Error**: `±1.8%` (Confidence interval: `228.8 kWh/day` to `237.2 kWh/day`).
+- **Baseline Period (Days 1–30)**: `658.9 kWh/day` average
+- **Target Expectation**: `560.1 kWh/day` (Target Reduction: `98.8 kWh/day`)
+- **Measured Period (Days 61–90)**: `559.2 kWh/day`
+- **Verified Energy Reduction**: `99.7 kWh/day` (`15.13%` energy reduction)
+- **Target Achievement Ratio**: `100.9%`
+- **Verified Financial Saving**: `₹1,123.73 / day` (`₹33,711.90` total over 30-day verification period)
+- **Target Error**: `0.9 kWh/day` (`0.91%` absolute percentage error)
+- **Sensor Uncertainty**: Assumed sensor uncertainty (±1.8%), lower bound: `97.9 kWh/day`, upper bound: `101.5 kWh/day`.
 
 ---
 
-### **16. Accessibility Compliance**
-- WCAG 2.1 AA compliant: Keyboard focus indicators (`focus-visible:ring-2`), contrast ratio > 4.5:1, screen reader ARIA labels, non-color-only indicators.
+### **16. Accessibility Checks**
+- Accessibility checks implemented: Keyboard focus indicators (`focus-visible:ring-2`), contrast ratio > 4.5:1, screen reader ARIA labels, non-color-only indicators.
 
 ---
 
@@ -128,7 +131,7 @@ Provides interactive 24-hour time series alignment overlaying Actual Load, Targe
 ---
 
 ### **19. User Validation Protocol**
-- Structured pilot protocol defined across 4 user personas and 5 core tasks; labeled "Validation pending" field trial.
+- Structured pilot protocol defined across 4 user personas and 5 core tasks; explicitly labeled "Real-user validation pending field trial".
 
 ---
 

@@ -21,23 +21,28 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Enable CORS for React frontend development
+# Configurable CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Programmatic Single Source of Truth for Registered Engines & Services
-REGISTERED_ENGINES = {
+# Core Calculation Engines
+CORE_ENGINES = {
     "data_generator": "Active (90-day 15-min telemetry)",
     "quality_engine": "Active (Freshness & edge failure simulator)",
     "disaggregation_engine": "Active (Scenario disaggregation)",
     "cause_engine": "Active (Actionable root-cause detection)",
     "recommendation_manager": "Active (Stateful recommendation tracker)",
-    "verification_engine": "Active (Baseline vs. Measured experiment)",
+    "verification_engine": "Active (Historical baseline vs. Measured experiment)"
+}
+
+# Total Registered API Services & Routes
+REGISTERED_SERVICES = {
+    **CORE_ENGINES,
     "equipment_registry": f"Active ({len(EQUIPMENT_REGISTRY)} registered loads)",
     "telemetry_router": "Active (/api/data)",
     "disaggregation_router": "Active (/api/disaggregation)",
@@ -46,8 +51,8 @@ REGISTERED_ENGINES = {
     "equipment_router": "Active (/api/equipment)",
     "quality_router": "Active (/api/quality)",
     "i18n_translator": "Active (English & Hindi support)",
-    "cors_middleware": "Active (Allow all origins)",
-    "baseline_regression_model": "Active (IPMVP compliant historical model)",
+    "cors_middleware": "Active (Configured CORS origins)",
+    "baseline_model": "Active (Historical baseline model)",
     "edge_failure_simulator": "Active (Missing, Stale, Stuck sensor)",
     "drilldown_evidence_engine": "Active (Load-level time series alignment)",
     "role_permission_evaluator": "Active (4 Roles: Operations, Manager, Technician, Resident)"
@@ -58,12 +63,14 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 @app.get("/api/health")
 def health_check():
     """
-    Health endpoint reporting programmatically calculated registered service count.
+    Health endpoint returning engine count and registered components.
     """
     return {
         "status": "HEALTHY",
-        "service_count": len(REGISTERED_ENGINES),
-        "services": REGISTERED_ENGINES,
+        "engine_count": len(CORE_ENGINES),
+        "service_count": len(REGISTERED_SERVICES),
+        "engines": CORE_ENGINES,
+        "services": REGISTERED_SERVICES,
         "timestamp": datetime.now().isoformat()
     }
 

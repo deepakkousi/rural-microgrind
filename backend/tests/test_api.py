@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from app.main import app, REGISTERED_ENGINES
+from app.main import app, CORE_ENGINES, REGISTERED_SERVICES
 
 client = TestClient(app)
 
@@ -8,8 +8,8 @@ def test_api_health():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "HEALTHY"
-    assert data["service_count"] == len(REGISTERED_ENGINES) # Dynamic programmatically calculated single source of truth!
-    assert "data_generator" in data["services"]
+    assert data["engine_count"] == len(CORE_ENGINES)
+    assert data["service_count"] == len(REGISTERED_SERVICES)
 
 def test_i18n_translation():
     resp_en = client.get("/api/i18n/en")
@@ -21,7 +21,6 @@ def test_i18n_translation():
     assert "ग्रामीण माइक्रोग्रिड" in resp_hi.json()["title"]
 
 def test_role_permissions():
-    # Test endpoints accessible across roles
     resp_eq = client.get("/api/equipment")
     assert resp_eq.status_code == 200
     assert len(resp_eq.json()) == 9
