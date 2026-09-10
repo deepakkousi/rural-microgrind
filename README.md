@@ -19,7 +19,7 @@ The **Rural Microgrid Intelligence Platform** converts smart meter telemetry, eq
 2. Plain-language root cause explanations (WHAT, WHY, EVIDENCE).
 3. Actionable operational recommendations.
 4. Empirical **Baseline → Target → Measured → Verified Energy Reduction** experiments.
-5. Role-based views (Operations, Manager, Technician, Resident) with multi-language (English/Hindi) and WCAG accessibility checks.
+5. Role-based views (Operations, Manager, Technician, Resident) with multi-language (English/Hindi) and WCAG 2.1 AA-oriented accessibility practices.
 
 ---
 
@@ -191,6 +191,16 @@ Three 30-day experimental phases calculated dynamically from raw telemetry (veri
 | `INT_03` | Workshop CNC Machine Shift | `COST_REDUCTION` | 47.9 | 48.1 | **0.0 kWh/d** | **₹179.49 / d** |
 | `INT_04` | Classroom Lighting Dimming | `ENERGY_REDUCTION` | 153.9 | 144.7 | **9.2 kWh/d** | **₹76.48 / d** |
 
+### ⚖️ Mathematical Reconciliation: Feeder Total vs. Submeter Interventions
+
+| Channel Scope | Daily Energy Saving | Daily Cost Saving | Physical / Mathematical Reconciliation Note |
+|---|---|---|---|
+| **Direct Interventions (Submeter Sum)** | **82.9 kWh/day** | **₹1,006.50 / day** | Direct sum of sub-metered targeted loads: HVAC Setback (`73.7 kWh/d`, `₹644.71/d`) + Classroom Lighting (`9.2 kWh/d`, `₹76.48/d`) + Water Pump Shift (`₹105.82/d`) + CNC Shift (`₹179.49/d`). |
+| **Main Microgrid Feeder Meter** | **82.0 kWh/day** (`12.73%`) | **₹1,000.63 / day** | Net measurement across all circuits + solar gen + unmetered background load (`643.9 kWh/d` baseline vs `561.9 kWh/d` verification). |
+| **Reconciliation Variance** | **-0.9 kWh/day** | **-₹5.87 / day** | Reconciled by non-intervened campus circuits (kitchen load drift `+0.31 kWh/d`, CNC standby `+0.18 kWh/d`, water pump standby `+0.04 kWh/d`, IT standby `+0.01 kWh/d`) and unmetered parasitic microgrid draw (`~0.33 kWh/d`). |
+
+$$\text{Verified Reduction \%} = \frac{\text{Baseline} - \text{Measured}}{\text{Baseline}} \times 100 = \frac{643.9 - 561.9}{643.9} \times 100 = \frac{82.0}{643.9} \times 100 = 12.7349\% \approx 12.73\%$$
+
 ---
 
 ## 👥 Role-Based Dashboard Architecture
@@ -231,7 +241,7 @@ Run Pytest suite:
 cd backend
 python -m pytest tests/ -v
 ```
-**Test Results**: **30 / 30 Passed (100% Pass Rate)**.
+**Test Results**: **31 / 31 Passed (100% Pass Rate)**.
 
 ---
 

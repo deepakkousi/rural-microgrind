@@ -41,4 +41,16 @@ def test_error_analysis():
     assert "absolute_error_kwh" in err
     assert "percentage_error" in err
     assert err["percentage_error"] >= 0.0
-    assert "Assumed sensor uncertainty" in err["sensor_uncertainty"]
+    assert "Assumed prototype sensor uncertainty" in err["sensor_uncertainty"] or "Assumed sensor uncertainty" in err["sensor_uncertainty"]
+
+def test_reconciliation_math():
+    df = generate_microgrid_dataset()
+    summary = verification_engine.evaluate_verification_experiment(df)
+    rec = summary.get("reconciliation")
+    assert rec is not None
+    assert rec["main_meter_reduction_kwh_day"] == 82.0
+    assert rec["sum_submeter_reductions_kwh_day"] == 82.9
+    assert rec["background_unmetered_variance_kwh_day"] == -0.9
+    assert rec["main_meter_daily_cost_saving_inr"] == 1000.63
+    assert rec["sum_submeter_daily_cost_savings_inr"] == 1006.50
+    assert rec["background_cost_variance_inr"] == -5.87

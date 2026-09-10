@@ -53,7 +53,8 @@ Raw Smart Meter Data (15-min) + Equipment Schedules + Occupancy + Tariff Rates
 - **Empirical Evaluation Metrics against Benchmark**:
   - **Mean Absolute Error (MAE)**: `0.243 kW`
   - **Root Mean Square Error (RMSE)**: `0.304 kW`
-  - **Mean Absolute Percentage Error (MAPE)**: `1.15%`
+  - **Mean Absolute Percentage Error (MAPE)**: `1.17%`
+  - **Weighted Absolute Percentage Error (WAPE)**: `0.98%`
 - **Load Tiers**:
   - Critical (Server Rack, Network): ~4.8 kW (16.2%)
   - Essential (Lighting, Water Pump, Kitchen): ~12.5 kW (42.2%)
@@ -104,11 +105,30 @@ Provides interactive 24-hour time series alignment overlaying Actual Load, Targe
 - **Baseline Period (Days 1–30)**: `643.9 kWh/day` average
 - **Target Expectation**: `547.3 kWh/day` (Target Reduction: `96.6 kWh/day`)
 - **Measured Period (Days 61–90)**: `561.9 kWh/day`
-- **Verified Energy Reduction**: `82.0 kWh/day` (`12.73%` energy reduction within synthetic experiment)
+- **Verified Feeder Energy Reduction**: `82.0 kWh/day` (`12.73%` energy reduction within synthetic experiment)
 - **Target Achievement Ratio**: `84.9%`
 - **Verified Financial Saving**: `₹1,000.63 / day` (`₹30,018.90` total over 30-day verification period)
 - **Target Error**: `14.6 kWh/day` (`15.11%` error against goal)
 - **Sensor Uncertainty**: Assumed prototype sensor uncertainty (±1.8% based on typical smart meter transducer tolerance), lower bound: `80.5 kWh/day`, upper bound: `83.5 kWh/day`.
+
+#### **Intervention-by-Intervention Empirical Breakdown**
+
+| ID | Intervention Name | Type | Baseline (kWh/d) | Verified (kWh/d) | Energy Saved | Cost Saved |
+|---|---|---|---|---|---|---|
+| `INT_01` | Water Pump Peak Tariff Shift | `COST_REDUCTION` | 16.5 | 16.5 | **0.0 kWh/d** | **₹105.82 / d** |
+| `INT_02` | HVAC Low-Occupancy Setback | `ENERGY_REDUCTION` | 220.5 | 146.8 | **73.7 kWh/d** | **₹644.71 / d** |
+| `INT_03` | Workshop CNC Machine Shift | `COST_REDUCTION` | 47.9 | 48.1 | **0.0 kWh/d** | **₹179.49 / d** |
+| `INT_04` | Classroom Lighting Dimming | `ENERGY_REDUCTION` | 153.9 | 144.7 | **9.2 kWh/d** | **₹76.48 / d** |
+
+#### **Mathematical Reconciliation: Feeder Total vs. Submeter Interventions**
+
+| Channel Scope | Daily Energy Saving | Daily Cost Saving | Physical / Mathematical Reconciliation Note |
+|---|---|---|---|
+| **Direct Interventions (Submeter Sum)** | **82.9 kWh/day** | **₹1,006.50 / day** | Direct sum of sub-metered targeted loads: HVAC Setback (`73.7 kWh/d`, `₹644.71/d`) + Classroom Lighting (`9.2 kWh/d`, `₹76.48/d`) + Water Pump Shift (`₹105.82/d`) + CNC Shift (`₹179.49/d`). |
+| **Main Microgrid Feeder Meter** | **82.0 kWh/day** (`12.73%`) | **₹1,000.63 / day** | Net measurement across all circuits + solar gen + unmetered background load (`643.9 kWh/d` baseline vs `561.9 kWh/d` verification). |
+| **Reconciliation Variance** | **-0.9 kWh/day** | **-₹5.87 / day** | Reconciled by non-intervened campus circuits (kitchen load drift `+0.31 kWh/d`, CNC standby `+0.18 kWh/d`, water pump standby `+0.04 kWh/d`, IT standby `+0.01 kWh/d`) and unmetered parasitic microgrid draw (`~0.33 kWh/d`). |
+
+$$\text{Verified Reduction \%} = \frac{\text{Baseline} - \text{Measured}}{\text{Baseline}} \times 100 = \frac{643.9 - 561.9}{643.9} \times 100 = \frac{82.0}{643.9} \times 100 = 12.7349\% \approx 12.73\%$$
 
 ---
 
@@ -124,8 +144,8 @@ Provides interactive 24-hour time series alignment overlaying Actual Load, Targe
 
 ### **18. Automated Testing Results**
 - **Executed Test Suite**: Pytest
-- **Actual Total Tests**: **30**
-- **Passed**: **30** (`100%` pass rate)
+- **Actual Total Tests**: **31**
+- **Passed**: **31** (`100%` pass rate)
 - **Failed**: **0**
 
 ---

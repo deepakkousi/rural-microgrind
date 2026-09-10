@@ -10,15 +10,22 @@ def get_recommendations():
     return recommendation_manager.get_all_recommendations(df)
 
 @router.post("/{recommendation_id}/status")
+@router.patch("/{recommendation_id}/status")
 def update_recommendation_status(
     recommendation_id: str,
-    payload: dict = Body(...)
+    payload: dict = Body(default=None),
+    status: str = None
 ):
-    status = payload.get("status")
-    if not status:
+    target_status = None
+    if payload and isinstance(payload, dict) and "status" in payload:
+        target_status = payload["status"]
+    elif status:
+        target_status = status
+        
+    if not target_status:
         raise HTTPException(status_code=400, detail="Status field is required.")
     try:
-        recommendation_manager.update_recommendation_status(recommendation_id, status)
-        return {"recommendation_id": recommendation_id, "status": status, "success": True}
+        recommendation_manager.update_recommendation_status(recommendation_id, target_status)
+        return {"recommendation_id": recommendation_id, "status": target_status, "success": True}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

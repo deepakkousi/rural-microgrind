@@ -85,10 +85,11 @@ class VerificationSummary(BaseModel):
     target_achievement_pct: Optional[float] = None
     error_analysis: Optional[Dict[str, Any]] = None
     interventions_applied: Optional[List[Dict[str, Any]]] = None
+    reconciliation: Optional[Dict[str, Any]] = None
 
 class FailureSimulationRequest(BaseModel):
-    failure_type: str # MISSING_DATA, STALE_DATA, STUCK_SENSOR, NEGATIVE_READING, TARIFF_REVISION, RESET
-    duration_intervals: int = 16 # Default ~4 hours
+    failure_type: Optional[str] = "RESET" # MISSING_DATA, STALE_DATA, STUCK_SENSOR, NEGATIVE_READING, TARIFF_REVISION, RESET
+    duration_intervals: Optional[int] = 16 # Default ~4 hours
     affected_channel: Optional[str] = "water_pump_kw"
 
 class HealthResponse(BaseModel):

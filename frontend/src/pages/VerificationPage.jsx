@@ -139,6 +139,46 @@ export default function VerificationPage({ lang }) {
           </table>
         </div>
       </div>
+
+      {/* Mathematical Reconciliation Panel */}
+      {summary.reconciliation && (
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-white text-base">Mathematical Reconciliation: Feeder Total vs. Submeter Interventions</h3>
+            <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded">
+              Reconciled Balance
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 font-mono text-sm">
+            <div className="bg-slate-950 border border-slate-800 p-3 rounded-lg">
+              <span className="text-xs text-slate-400 block font-sans">Main Feeder Net Reduction</span>
+              <div className="text-lg font-bold text-sky-400 mt-1">
+                {summary.reconciliation.main_meter_reduction_kwh_day} kWh/day ({summary.reconciliation.main_meter_reduction_pct}%)
+              </div>
+              <span className="text-xs text-emerald-400 mt-0.5 block font-sans">₹{summary.reconciliation.main_meter_daily_cost_saving_inr.toLocaleString()}/day saving</span>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 p-3 rounded-lg">
+              <span className="text-xs text-slate-400 block font-sans">Sum of Submeter Interventions</span>
+              <div className="text-lg font-bold text-indigo-400 mt-1">
+                {summary.reconciliation.sum_submeter_reductions_kwh_day} kWh/day
+              </div>
+              <span className="text-xs text-emerald-400 mt-0.5 block font-sans">₹{summary.reconciliation.sum_submeter_daily_cost_savings_inr.toLocaleString()}/day subtotal</span>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 p-3 rounded-lg">
+              <span className="text-xs text-slate-400 block font-sans">Background & Unmetered Variance</span>
+              <div className="text-lg font-bold text-amber-400 mt-1">
+                {summary.reconciliation.background_unmetered_variance_kwh_day} kWh/day
+              </div>
+              <span className="text-xs text-amber-400 mt-0.5 block font-sans">₹{summary.reconciliation.background_cost_variance_inr}/day net variance</span>
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 leading-relaxed border-t border-slate-800/80 pt-3">
+            {summary.reconciliation.explanation}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

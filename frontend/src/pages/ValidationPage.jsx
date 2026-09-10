@@ -12,7 +12,7 @@ export default function ValidationPage({ lang }) {
   const tasks = [
     { id: 1, name: "Find Biggest Energy Issue", description: "Locate peak tariff water pumping and HVAC low-occupancy waste.", expectedTime: "< 30 sec" },
     { id: 2, name: "Explain Cause of High Energy", description: "Read non-technical root cause explanation (WHAT, WHY, EVIDENCE).", expectedTime: "< 45 sec" },
-    { id: 3, name: "Find Recommended Action", description: "Inspect targeted operational action and confidence score.", expectedTime: "< 30 sec" },
+    { id: 3, name: "Find Recommended Action", description: "Inspect targeted operational action and evidence strength score (0–100).", expectedTime: "< 30 sec" },
     { id: 4, name: "Check Data Freshness Status", description: "Verify telemetry freshness badge (LIVE vs STALE vs MISSING).", expectedTime: "< 15 sec" },
     { id: 5, name: "Understand Expected Saving", description: "Review estimated kWh and monthly monetary savings.", expectedTime: "< 20 sec" }
   ];
