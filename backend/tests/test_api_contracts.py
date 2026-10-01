@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -239,3 +239,72 @@ def test_valid_request_status_update():
     data = resp.json()
     assert data["success"] is True
     assert data["status"] == "APPLIED"
+
+
+# ---------------------------------------------------------
+# 5. Authoritative Route Parity & Consistency Tests
+# ---------------------------------------------------------
+
+def test_tariff_endpoint_contract():
+    resp = client.get("/api/data/tariff")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "currency" in data
+    assert "rates" in data
+    assert "periods" in data
+    assert len(data["periods"]) == 3
+
+
+def test_causes_endpoint_contract():
+    resp = client.get("/api/recommendations/causes")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert isinstance(data, list)
+    assert len(data) >= 2
+
+
+def test_user_roles_contract():
+    resp = client.get("/api/user/roles")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "roles" in data
+    assert len(data["roles"]) == 4
+
+    resp_singular = client.get("/api/user/role")
+    assert resp_singular.status_code == 200
+
+
+def test_verification_baseline_contract():
+    resp = client.get("/api/verification/baseline")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "baseline_period" in data
+    assert "baseline_daily_avg_kwh" in data
+
+
+def test_verification_experiment_contract():
+    resp = client.get("/api/verification/experiment")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "intervention_period" in data
+    assert "interventions_applied" in data
+
+
+def test_openapi_urls_contract():
+    assert client.get("/api/openapi.json").status_code == 200
+    assert client.get("/api/v1/openapi.json").status_code == 200
+
+
+def test_recommendation_daily_monthly_consistency():
+    resp = client.get("/api/recommendations")
+    assert resp.status_code == 200
+    for rec in resp.json():
+        assert "daily_energy_saving_kwh" in rec
+        assert "daily_cost_saving" in rec
+        assert "estimated_energy_saving_kwh" in rec
+        assert "estimated_cost_saving" in rec
+        expected_monthly_kwh = round(rec["daily_energy_saving_kwh"] * 30.0, 1)
+        expected_monthly_cost = round(rec["daily_cost_saving"] * 30.0, 2)
+        assert rec["estimated_energy_saving_kwh"] == expected_monthly_kwh
+        assert rec["estimated_cost_saving"] == expected_monthly_cost
+

@@ -39,3 +39,32 @@ def get_data_summary():
             "end": df.iloc[-1]['timestamp']
         }
     }
+
+@router.get("/tariff")
+def get_tariff_structure():
+    from app.core.config import settings
+    return {
+        "currency": settings.CURRENCY_CODE,
+        "currency_symbol": settings.CURRENCY_SYMBOL,
+        "rates": settings.TARIFF_RATES,
+        "periods": [
+            {
+                "period": "OFF_PEAK",
+                "rate": settings.TARIFF_RATES.get("OFF_PEAK", 4.5),
+                "hours": "22:00 - 06:00",
+                "description": "Late night / early morning off-peak window"
+            },
+            {
+                "period": "SHOULDER",
+                "rate": settings.TARIFF_RATES.get("SHOULDER", 7.0),
+                "hours": "06:00 - 14:00, 19:00 - 22:00",
+                "description": "Daytime standard operation window"
+            },
+            {
+                "period": "PEAK",
+                "rate": settings.TARIFF_RATES.get("PEAK", 12.0),
+                "hours": "14:00 - 19:00",
+                "description": "Afternoon peak demand surcharge window"
+            }
+        ]
+    }

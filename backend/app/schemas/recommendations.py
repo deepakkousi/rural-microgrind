@@ -1,4 +1,4 @@
-﻿from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
 
 class CauseEvidence(BaseModel):
@@ -17,8 +17,10 @@ class Recommendation(BaseModel):
     cause: str = Field(..., description="Underlying root-cause explanation")
     evidence: CauseEvidence = Field(..., description="Quantified evidence signals")
     recommended_action: str = Field(..., description="Operational action recommended to microgrid operator")
-    estimated_energy_saving_kwh: float = Field(0.0, description="Monthly energy reduction in kWh (0.0 for pure load shifts)")
-    estimated_cost_saving: float = Field(..., description="Estimated monthly financial cost saving in INR")
+    daily_energy_saving_kwh: float = Field(0.0, description="Daily energy reduction in kWh (0.0 for pure load shifts)")
+    daily_cost_saving: float = Field(0.0, description="Daily financial cost saving in INR")
+    estimated_energy_saving_kwh: float = Field(0.0, description="Monthly energy reduction in kWh (daily_energy_saving_kwh * 30)")
+    estimated_cost_saving: float = Field(..., description="Estimated monthly financial cost saving in INR (daily_cost_saving * 30)")
     evidence_score: int = Field(90, description="Transparent 0-100 heuristic evidence strength score")
     evidence_breakdown: Dict[str, int] = Field(default_factory=dict, description="Point contribution breakdown")
     confidence: float = Field(..., description="Legacy compatibility (evidence_score / 100.0)")

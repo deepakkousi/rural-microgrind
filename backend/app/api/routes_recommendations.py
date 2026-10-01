@@ -9,6 +9,11 @@ def get_recommendations():
     df = get_current_df()
     return recommendation_manager.get_all_recommendations(df)
 
+@router.get("/causes")
+def get_detected_causes():
+    df = get_current_df()
+    return recommendation_manager.get_all_recommendations(df)
+
 @router.post("/{recommendation_id}/status")
 @router.patch("/{recommendation_id}/status")
 def update_recommendation_status(

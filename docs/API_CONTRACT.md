@@ -2,7 +2,7 @@
 
 This document defines the formal API contracts, request/response schemas, validation rules, and standardized error responses for the Rural Microgrid Intelligence Platform REST API.
 
-All endpoints are served under the `/api` prefix. The interactive OpenAPI documentation is accessible at `/api/v1/openapi.json` and `/docs` when the backend is running.
+All endpoints are served under the `/api` prefix. The interactive Swagger documentation is accessible at `/docs` and OpenAPI JSON schemas are accessible at `/api/openapi.json` and `/api/v1/openapi.json`.
 
 ---
 
@@ -50,30 +50,53 @@ All error responses (HTTP 4xx and 5xx) conform to a strict, predictable JSON env
 | `GET` | `/api/data/meter` | Recent raw 15-minute telemetry intervals | `limit` (int, 1..8640, default: 96) |
 | `GET` | `/api/data/context` | Contextual telemetry (occupancy, tariffs, solar) | `limit` (int, 1..8640, default: 96) |
 | `GET` | `/api/data/summary` | Dataset metadata, total rows, date boundary | None |
+| `GET` | `/api/data/tariff` | Active Time-of-Use tariff structure, rates, and schedule windows | None |
 | `GET` | `/api/disaggregation` | Disaggregated load components, baseline, confidence | None |
 | `GET` | `/api/disaggregation/drilldown/{load_id}` | 15-min timeseries evidence for a specific load | Path: `load_id` (str, e.g. `EQ_WP_01`) |
 | `GET` | `/api/recommendations` | Active root-cause recommendations with evidence | None |
+| `GET` | `/api/recommendations/causes` | Detected root-cause diagnostics | None |
 | `POST` | `/api/recommendations/{rec_id}/status` | Update recommendation status (`PENDING`/`APPLIED`/`REJECTED`) | Body: `StatusUpdateRequest` |
 | `PATCH` | `/api/recommendations/{rec_id}/status` | Update recommendation status (alias) | Body: `StatusUpdateRequest` |
 | `GET` | `/api/verification/summary` | Measured vs baseline M&V results and savings | None |
 | `GET` | `/api/verification/timeseries` | Measured vs baseline timeseries comparison points | None |
+| `GET` | `/api/verification/baseline` | Baseline load modeling and 15% reduction target summary | None |
+| `GET` | `/api/verification/experiment` | 4 operational policy changes and verified savings | None |
 | `GET` | `/api/equipment` | Complete equipment registry with load tiers | None |
 | `GET` | `/api/equipment/{equipment_id}` | Single equipment record by ID | Path: `equipment_id` (str) |
-| `GET` | `/api/quality/freshness` | Telemetry freshness status (`LIVE`, `STALE`, `MISSING`) | None |
+| `GET` | `/api/quality/freshness` | Telemetry freshness status (`LIVE`, `STALE`, `VERY_STALE`, `MISSING`) | None |
 | `GET` | `/api/quality/anomalies` | Detected sensor anomalies (stuck, negative, spike) | None |
 | `POST` | `/api/quality/simulate-failure` | Inject simulated edge failures for testing | Body: `FailureSimulationRequest` |
+| `GET` | `/api/user/roles` | Available user personas (`operations`, `manager`, `technician`, `resident`) | None |
 | `GET` | `/api/i18n/{lang}` | Localization dictionary for UI (`en`, `hi`) | Path: `lang` (str) |
 
 ---
 
-## 3. Endpoint Specifications
+## 3. Authoritative Calculations: Energy vs. Cost Savings
 
-### 3.1. System Health
+The platform strictly separates **energy reduction (kWh)** from **cost reduction (load shifting)**. Every recommendation and intervention provides both **daily** and **monthly** (30-day period) metrics:
+
+$$\text{Monthly Cost Saving (₹/mo)} = \text{Daily Cost Saving (₹/d)} \times 30$$
+$$\text{Monthly Energy Saving (kWh/mo)} = \text{Daily Energy Saving (kWh/d)} \times 30$$
+
+| ID | Load / Intervention | Type | Daily Energy | Daily Cost | Monthly Energy (30d) | Monthly Cost (30d) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `REC_WP_01` / `INT_01` | Water Pump Peak Tariff Shift | `COST_REDUCTION` (Load Shift) | **0.0 kWh/d** | **₹105.82 / d** | **0.0 kWh/mo** | **₹3,174.60 / mo** |
+| `REC_HVAC_01` / `INT_02` | HVAC Low-Occupancy Setback | `ENERGY_REDUCTION` | **73.7 kWh/d** | **₹644.71 / d** | **2,211.0 kWh/mo** | **₹19,341.30 / mo** |
+| `REC_LAB_01` / `INT_03` | Workshop CNC Machine Shift | `COST_REDUCTION` (Load Shift) | **0.0 kWh/d** | **₹179.49 / d** | **0.0 kWh/mo** | **₹5,384.70 / mo** |
+| `REC_LT_01` / `INT_04` | Classroom Lighting Dimming | `ENERGY_REDUCTION` | **9.2 kWh/d** | **₹76.48 / d** | **276.0 kWh/mo** | **₹2,294.40 / mo** |
+| **Sum of Submeter Interventions** | Targeted Circuits | — | **82.9 kWh/d** | **₹1,006.50 / d** | **2,487.0 kWh/mo** | **₹30,195.00 / mo** |
+| **Main Feeder Net Measurement** | Net Microgrid Feeder | — | **82.0 kWh/d** | **₹1,000.63 / d** | **2,460.0 kWh/mo** | **₹30,018.90 / mo** |
+| **Reconciliation Variance** | Non-Intervened & Parasitic | — | **-0.9 kWh/d** | **-₹5.87 / d** | **-27.0 kWh/mo** | **-₹176.10 / mo** |
+
+---
+
+## 4. Endpoint Specifications
+
+### 4.1. System Health & User Roles
 
 #### `GET /api/health`
 Returns the operational status of all core calculation engines and registered services.
 
-- **Request**: None
 - **Response (200 OK)**:
 ```json
 {
@@ -93,124 +116,56 @@ Returns the operational status of all core calculation engines and registered se
 }
 ```
 
----
-
-### 3.2. Telemetry Ingestion & Data
-
-#### `GET /api/data/meter`
-Retrieves sliced raw telemetry records from the microgrid data store.
-
-- **Query Parameters**:
-  - `limit` (integer, optional): Number of intervals to return. Range: `1` to `8640`. Default: `96` (24 hours).
-- **Validation**: If `limit < 1` or `limit > 8640`, returns `422 Unprocessable Entity` with standard error envelope.
-- **Response (200 OK)**: Array of `TelemetryRecord`:
-```json
-[
-  {
-    "timestamp": "2026-06-01T00:00:00",
-    "total_kw": 18.52,
-    "it_network_kw": 4.82,
-    "lighting_kw": 7.15,
-    "water_pump_kw": 0.0,
-    "kitchen_kw": 0.5,
-    "hvac_kw": 0.0,
-    "lab_equipment_kw": 0.0,
-    "occupancy": 5.0,
-    "tariff_period": "OFF_PEAK",
-    "tariff_rate": 4.5,
-    "solar_gen_kw": 0.0,
-    "net_grid_kw": 18.52,
-    "day_index": 1
-  }
-]
-```
-
-#### `GET /api/data/context`
-Retrieves environmental and tariff context data.
-
-- **Query Parameters**:
-  - `limit` (integer, optional): Number of records. Range: `1` to `8640`. Default: `96`.
-- **Response (200 OK)**: Array of `ContextRecord` (`timestamp`, `occupancy`, `tariff_period`, `tariff_rate`, `solar_gen_kw`).
-
-#### `GET /api/data/summary`
-Retrieves record count and temporal boundaries.
+#### `GET /api/user/roles` (and `GET /api/user/role`)
+Returns supported operational personas.
 
 - **Response (200 OK)**:
 ```json
 {
-  "total_records": 8640,
-  "latest_record": { ... },
-  "date_range": {
-    "start": "2026-06-01T00:00:00",
-    "end": "2026-08-29T23:45:00"
-  }
+  "roles": [
+    { "id": "operations", "name": "Operations Staff", "description": "Active alerts and operational recommendations" },
+    { "id": "manager", "name": "Microgrid Manager", "description": "Financial metrics and verified savings" },
+    { "id": "technician", "name": "Technician", "description": "Sensor health and failure simulation" },
+    { "id": "resident", "name": "Resident / Non-Technical User", "description": "Plain-language disaggregation summary" }
+  ]
 }
 ```
 
 ---
 
-### 3.3. Load Disaggregation
+### 4.2. Telemetry Ingestion & Tariffs
 
-#### `GET /api/disaggregation`
-Calculates empirical load breakdown across registered equipment channels and evaluation metrics.
+#### `GET /api/data/meter`
+Retrieves sliced raw telemetry records from the microgrid data store.
+- **Query Parameters**: `limit` (integer, 1..8640, default: 96).
 
-- **Response (200 OK)**: `DisaggregationSummary`:
+#### `GET /api/data/tariff`
+Retrieves active Time-of-Use tariff structure and schedule windows.
+
+- **Response (200 OK)**:
 ```json
 {
-  "timestamp": "2026-08-29T23:45:00",
-  "total_kw": 22.74,
-  "tiers": {
-    "critical": { "kw": 5.15, "pct": 22.9 },
-    "essential": { "kw": 12.91, "pct": 57.4 },
-    "flexible": { "kw": 4.45, "pct": 19.8 }
+  "currency": "INR",
+  "currency_symbol": "₹",
+  "rates": {
+    "OFF_PEAK": 4.5,
+    "SHOULDER": 7.0,
+    "PEAK": 12.0
   },
-  "evaluation_metrics": {
-    "mae_kw": 0.243,
-    "rmse_kw": 0.304,
-    "mape_pct": 1.17,
-    "wape_pct": 0.98
-  },
-  "components": {
-    "lighting": 8.25,
-    "hvac": 0.35,
-    "water_pump": 7.12,
-    "lab_equipment": 0.54,
-    "kitchen": 1.15,
-    "it_network": 4.88
-  },
-  "percentage_breakdown": {
-    "critical": 22.9,
-    "essential": 57.4,
-    "flexible": 19.8
-  },
-  "detailed_loads": [ ... ]
-}
-```
-
-#### `GET /api/disaggregation/drilldown/{load_id}`
-Returns time series alignment and evidence points for a specific equipment load.
-
-- **Path Parameters**:
-  - `load_id` (string, required): Registered equipment ID, e.g. `EQ_WP_01`, `EQ_HVAC_01`, `EQ_LAB_01`.
-- **Error (404 Not Found)**: If `load_id` is unrecognized:
-```json
-{
-  "error": {
-    "code": "RESOURCE_NOT_FOUND",
-    "message": "Equipment with ID nonexistent_id not found.",
-    "details": {},
-    "timestamp": "2026-10-01T15:30:00.000000"
-  },
-  "detail": "Equipment with ID nonexistent_id not found."
+  "periods": [
+    { "period": "OFF_PEAK", "rate": 4.5, "hours": "22:00 - 06:00", "description": "Late night / early morning off-peak window" },
+    { "period": "SHOULDER", "rate": 7.0, "hours": "06:00 - 14:00, 19:00 - 22:00", "description": "Daytime standard operation window" },
+    { "period": "PEAK", "rate": 12.0, "hours": "14:00 - 19:00", "description": "Afternoon peak demand surcharge window" }
+  ]
 }
 ```
 
 ---
 
-### 3.4. Root-Cause Analysis & Recommendations
+### 4.3. Recommendations & Causes
 
-#### `GET /api/recommendations`
-Returns actionable operational recommendations with 4-part explanations and evidence scores.
+#### `GET /api/recommendations` (and `GET /api/recommendations/causes`)
+Returns actionable operational recommendations with 4-part explanations, daily and monthly savings, and Evidence Strength Scores.
 
 - **Response (200 OK)**: Array of `Recommendation`:
 ```json
@@ -227,11 +182,13 @@ Returns actionable operational recommendations with 4-part explanations and evid
       "metric": "Peak Tariff Pumping Load",
       "observed_value": 7.15,
       "expected_value": 0.0,
-      "context": "Pump draws an average of 7.15 kW during the ₹12.0/kWh peak period."
+      "context": "Pump draws an average of 7.15 kW during the ₹12.0/kWh peak period. Shifting this 2-hour window saves ₹105.82/day (₹3,174.60/month, 30 days) with 0.0 kWh/day energy reduction (pure load shifting)."
     },
     "recommended_action": "Shift water pumping schedule to the off-peak tariff window (10 PM - 2 AM).",
+    "daily_energy_saving_kwh": 0.0,
+    "daily_cost_saving": 105.82,
     "estimated_energy_saving_kwh": 0.0,
-    "estimated_cost_saving": 3217.5,
+    "estimated_cost_saving": 3174.6,
     "evidence_score": 95,
     "evidence_breakdown": {
       "telemetry_freshness": 30,
@@ -247,33 +204,9 @@ Returns actionable operational recommendations with 4-part explanations and evid
 ]
 ```
 
-#### `POST /api/recommendations/{recommendation_id}/status`
-Updates recommendation lifecycle state. Also supported via `PATCH`.
-
-- **Path Parameters**:
-  - `recommendation_id` (string, required): ID of target recommendation.
-- **Request Body**:
-```json
-{
-  "status": "APPLIED"
-}
-```
-- **Validation Rules**:
-  - `status` MUST be one of: `PENDING`, `APPLIED`, `REJECTED`.
-  - Empty body or missing status returns `400 Bad Request`.
-  - Unrecognized status returns `400 Bad Request` with error message.
-- **Response (200 OK)**:
-```json
-{
-  "recommendation_id": "REC_WP_01",
-  "status": "APPLIED",
-  "success": true
-}
-```
-
 ---
 
-### 3.5. Measurement & Verification (M&V)
+### 4.4. Verification Engine & Baseline
 
 #### `GET /api/verification/summary`
 Calculates empirical pre- vs. post-intervention savings, separating energy reduction from load shifting.
@@ -296,8 +229,8 @@ Calculates empirical pre- vs. post-intervention savings, separating energy reduc
   "error_analysis": {
     "target_reduction_kwh_day": 96.6,
     "verified_reduction_kwh_day": 82.0,
-    "absolute_error_kwh": 14.59,
-    "percentage_error": 15.1,
+    "absolute_error_kwh": 14.6,
+    "percentage_error": 15.11,
     "sensor_uncertainty": "Assumed prototype sensor uncertainty (±1.8%)",
     "lower_bound_kwh": 80.5,
     "upper_bound_kwh": 83.5
@@ -316,91 +249,8 @@ Calculates empirical pre- vs. post-intervention savings, separating energy reduc
 }
 ```
 
----
+#### `GET /api/verification/baseline`
+Returns the 30-day baseline average and 15% scenario reduction target.
 
-### 3.6. Equipment Registry
-
-#### `GET /api/equipment`
-Returns all registered campus microgrid loads and their operating tiers.
-
-- **Response (200 OK)**: Array of `EquipmentItem`:
-```json
-[
-  {
-    "equipment_id": "EQ_IT_01",
-    "equipment_name": "Server Rack",
-    "load_tier": "Critical",
-    "rated_power_kw": 3.5,
-    "location": "IT Data Room",
-    "schedule_description": "24/7 Continuous Operation",
-    "is_essential": true,
-    "channel_key": "it_network_kw"
-  }
-]
-```
-
-#### `GET /api/equipment/{equipment_id}`
-Returns details for a single equipment entity.
-
-- **Path Parameters**:
-  - `equipment_id` (string, required): e.g., `EQ_WP_01`.
-- **Error (404 Not Found)**: If ID is not in registry:
-```json
-{
-  "error": {
-    "code": "RESOURCE_NOT_FOUND",
-    "message": "Equipment with ID EQ_UNKNOWN not found.",
-    "details": {},
-    "timestamp": "2026-10-01T15:30:00.000000"
-  },
-  "detail": "Equipment with ID EQ_UNKNOWN not found."
-}
-```
-
----
-
-### 3.7. Data Quality & Edge Failure Simulation
-
-#### `GET /api/quality/freshness`
-Evaluates telemetry freshness relative to the latest timestamp.
-
-- **Response (200 OK)**: `FreshnessStatus`:
-```json
-{
-  "status": "LIVE",
-  "last_updated": "2026-10-01 15:30:00",
-  "age_minutes": 2.5,
-  "affected_sources": [],
-  "recommendation_reliability": "HIGH",
-  "warning_message": null
-}
-```
-
-#### `GET /api/quality/anomalies`
-Identifies abnormal sensor signals (negative values, stuck values, variance dropouts).
-
-- **Response (200 OK)**: Array of `AnomalyItem`.
-
-#### `POST /api/quality/simulate-failure`
-Configures simulated edge failures for testing platform resilience.
-
-- **Request Body**: `FailureSimulationRequest`:
-```json
-{
-  "failure_type": "MISSING_DATA",
-  "duration_intervals": 16,
-  "affected_channel": "water_pump_kw"
-}
-```
-Supported `failure_type` values: `MISSING_DATA`, `STALE_DATA`, `STUCK_SENSOR`, `NEGATIVE_READING`, `RESET`.
-
----
-
-### 3.8. Internationalization (i18n)
-
-#### `GET /api/i18n/{lang}`
-Retrieves localized UI text dictionaries.
-
-- **Path Parameters**:
-  - `lang` (string): `en` (English) or `hi` (Hindi). Fallback is `en`.
-- **Response (200 OK)**: Key-value dictionary of UI strings.
+#### `GET /api/verification/experiment`
+Returns the 4 operational policy changes and verified savings list.

@@ -132,6 +132,22 @@ def get_i18n_translations(lang: str):
         data = json.load(f)
     return data
 
+@app.get("/api/v1/openapi.json", include_in_schema=False)
+def get_openapi_v1_alias():
+    return app.openapi()
+
+@app.get("/api/user/roles")
+@app.get("/api/user/role")
+def get_user_roles():
+    return {
+        "roles": [
+            {"id": "operations", "name": "Operations Staff", "description": "Active alerts and operational recommendations"},
+            {"id": "manager", "name": "Microgrid Manager", "description": "Financial metrics and verified savings"},
+            {"id": "technician", "name": "Technician", "description": "Sensor health and failure simulation"},
+            {"id": "resident", "name": "Resident / Non-Technical User", "description": "Plain-language disaggregation summary"}
+        ]
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

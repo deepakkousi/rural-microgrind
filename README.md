@@ -1,9 +1,9 @@
-﻿# Rural Microgrid Intelligence Platform
+# Rural Microgrid Intelligence Platform
 
 [![Python Version](https://img.shields.io/badge/Python-3.13%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-sky.svg)](https://reactjs.org)
-[![Build Status](https://img.shields.io/badge/Tests-62%2F62%20Passed-emerald.svg)]()
+[![Build Status](https://img.shields.io/badge/Tests-69%2F69%20Passed-emerald.svg)]()
 [![API Contract](https://img.shields.io/badge/API_Contract-Documented_%26_Tested-blue.svg)](docs/API_CONTRACT.md)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
@@ -162,7 +162,7 @@ The engine cross-correlates power draws against schedules, occupancy, and tariff
 - **WHY Did It Happen?**: Scheduled during ₹12.0/kWh peak electricity pricing.
 - **EVIDENCE**: 7.1 kW draw during Peak Tariff when Off-Peak rate is ₹4.5/kWh.
 - **RECOMMENDED ACTION**: Shift water pumping schedule to late night Off-Peak tariff (10 PM - 2 AM).
-- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹3,174.60 / month` cost saving.
+- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹105.82 / day` (`₹3,174.60 / month`) cost saving.
 - **PROTOTYPE EVIDENCE SCORE**: `95 / 100` (Freshness: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15).
 
 ### 2. HVAC Low-Occupancy Waste (`REC_HVAC_01` — True Energy Reduction)
@@ -170,7 +170,7 @@ The engine cross-correlates power draws against schedules, occupancy, and tariff
 - **WHY Did It Happen?**: HVAC chillers maintaining full cooling output (18.8 kW) during low occupancy (< 25%).
 - **EVIDENCE**: 18.8 kW observed vs. 7.0 kW setback baseline.
 - **RECOMMENDED ACTION**: Set back thermostat by 2°C or idle chiller capacity when room occupancy drops below 25%.
-- **ESTIMATED SAVING**: `885.0 kWh / month` energy reduction → `₹6,195.00 / month` cost saving.
+- **ESTIMATED SAVING**: `73.7 kWh / day` (`2,211.0 kWh / month`) energy reduction → `₹644.71 / day` (`₹19,341.30 / month`) cost saving.
 - **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Occupancy Correlation: +30, Schedule: +20, Pattern: +15).
 
 ### 3. Workshop CNC Machine Shift (`REC_LAB_01` — Cost Reduction / Load Shift)
@@ -178,7 +178,7 @@ The engine cross-correlates power draws against schedules, occupancy, and tariff
 - **WHY Did It Happen?**: High-power practical machining sessions scheduled from 2 PM to 5 PM.
 - **EVIDENCE**: 12.5 kW draw during peak hours vs. ₹7.0/kWh morning shoulder rate.
 - **RECOMMENDED ACTION**: Reschedule CNC machining practicals to morning shoulder window (9 AM - 12 PM).
-- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹5,625.00 / month` cost saving.
+- **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹179.49 / day` (`₹5,384.70 / month`) cost saving.
 - **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15).
 
 ### 4. Classroom Lighting Dimming (`REC_LT_01` — True Energy Reduction)
@@ -186,7 +186,7 @@ The engine cross-correlates power draws against schedules, occupancy, and tariff
 - **WHY Did It Happen?**: Manual light switches left ON when student room occupancy drops below 25%.
 - **EVIDENCE**: 4.2 kW observed vs. 2.0 kW dimmed target.
 - **RECOMMENDED ACTION**: Automate 50% lighting dimming via occupancy sensors when room occupancy < 25%.
-- **ESTIMATED SAVING**: `132.0 kWh / month` energy reduction → `₹924.00 / month` cost saving.
+- **ESTIMATED SAVING**: `9.2 kWh / day` (`276.0 kWh / month`) energy reduction → `₹76.48 / day` (`₹2,294.40 / month`) cost saving.
 - **EVIDENCE STRENGTH SCORE**: `95 / 100` (Fresh Data: +30, Occupancy Correlation: +30, Schedule: +20, Pattern: +15).
 
 ---
@@ -280,16 +280,16 @@ The platform defines strict API contracts documented in [`docs/API_CONTRACT.md`]
 
 ## 🧪 Automated Testing Suite
 
-The repository includes a comprehensive 62-test automated suite executed via Pytest:
+The repository includes a comprehensive 69-test automated suite executed via Pytest:
 
 ```bash
-# Run all tests (62 tests across all categories)
+# Run all tests (69 tests across all categories)
 python -m pytest backend/tests/ -v
 
 # Run public dataset validation tests (6 tests)
 python -m pytest backend/tests/test_public_dataset.py -v
 
-# Run API contract schema tests (19 tests)
+# Run API contract schema tests (26 tests)
 python -m pytest backend/tests/test_api_contracts.py -v
 
 # Run end-to-end integration tests (6 tests)
@@ -304,9 +304,9 @@ python -m pytest backend/tests/test_api.py backend/tests/test_generator.py backe
 | :--- | :--- | :--- | :--- |
 | **Core Unit Tests** | `test_api.py`, `test_generator.py`, `test_disaggregation.py`, `test_cause_recommendations.py`, `test_verification.py`, `test_edge_cases.py`, `test_quality.py` | 31 | **31 Passed** |
 | **Public Dataset Validation** | `test_public_dataset.py` | 6 | **6 Passed** |
-| **API Contract & Schemas** | `test_api_contracts.py` | 19 | **19 Passed** |
+| **API Contract & Schemas** | `test_api_contracts.py` | 26 | **26 Passed** |
 | **E2E Integration Pipeline** | `integration/test_e2e_pipeline.py` | 6 | **6 Passed** |
-| **Total Automated Tests** | **Full Suite** | **62** | **62 Passed (100%)** |
+| **Total Automated Tests** | **Full Suite** | **69** | **69 Passed (100%)** |
 
 ---
 
@@ -344,18 +344,25 @@ cmd /c npm run build
 | `/api/data/meter` | GET | Generator | Retrieve raw 15-min smart meter time-series records |
 | `/api/data/context` | GET | Generator | Retrieve occupancy, ToU tariff, and solar data |
 | `/api/data/summary` | GET | Generator | Telemetry statistics and dataset date range |
+| `/api/data/tariff` | GET | Generator | Time-of-Use tariff structure and rates |
 | `/api/equipment` | GET | Loader | Full registry of 9 microgrid loads and metadata |
 | `/api/equipment/{id}` | GET | Loader | Single equipment record by ID |
 | `/api/disaggregation` | GET | Disaggregation | Disaggregated equipment power channels and accuracy |
 | `/api/disaggregation/drilldown/{load_id}` | GET | Disaggregation | 24-hr schedule vs. occupancy vs. tariff alignment |
 | `/api/recommendations` | GET | Cause & Rec | Actionable recommendations with Evidence Scores |
+| `/api/recommendations/causes` | GET | Cause Engine | Raw root-cause diagnostic records |
 | `/api/recommendations/{id}/status` | POST | Rec Manager | Transition status: `PENDING`, `APPLIED`, `REJECTED` |
 | `/api/verification/summary` | GET | Verification | Baseline vs. Target vs. Measured verified savings |
 | `/api/verification/timeseries` | GET | Verification | Daily verification trends across 90 days |
+| `/api/verification/baseline` | GET | Verification | Baseline period statistics and slice records |
+| `/api/verification/experiment` | GET | Verification | Full 3-phase experimental verification dataset |
 | `/api/quality/freshness` | GET | Quality | Telemetry age, freshness category, and timestamp |
 | `/api/quality/anomalies` | GET | Quality | Detected sensor anomalies, polarity errors, stuck signals |
 | `/api/quality/simulate-failure` | POST | Quality | Simulate missing, stale, stuck, or polarity errors |
+| `/api/user/roles` | GET | Auth / User | Available user roles, descriptions, and feature flags |
+| `/api/user/role` | GET | Auth / User | Current active user role session info |
 | `/api/i18n/{lang}` | GET | I18n | Localized strings dictionary (English / Hindi) |
+| `/api/openapi.json` | GET | Docs | Primary OpenAPI JSON schema (`/api/v1/openapi.json` alias) |
 
 ---
 
@@ -392,9 +399,9 @@ rural-microgrind/
 │   │   ├── public/                     # Standardized REDD House 1 sample & README
 │   │   ├── synthetic/                  # Synthetic microgrid simulation & README
 │   │   └── validation/                 # Metrics & public dataset validation pipeline
-│   └── tests/                          # 62 Pytest automated test cases
+│   └── tests/                          # 69 Pytest automated test cases
 │       ├── test_api.py                 # Health and routing tests
-│       ├── test_api_contracts.py       # 19 API contract & schema tests
+│       ├── test_api_contracts.py       # 26 API contract & schema tests
 │       ├── test_cause_recommendations.py# Diagnostic & recommendation tests
 │       ├── test_disaggregation.py      # Load disaggregation accuracy tests
 │       ├── test_edge_cases.py          # Edge failure handling tests

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Rural Microgrid Intelligence Platform — API TypeScript Definitions
  * Mirrors the backend Pydantic schemas in backend/app/schemas/
  */
@@ -164,6 +164,8 @@ export interface Recommendation {
   cause: string;
   evidence: CauseEvidence;
   recommended_action: string;
+  daily_energy_saving_kwh?: number;
+  daily_cost_saving?: number;
   estimated_energy_saving_kwh: number;
   estimated_cost_saving: number;
   evidence_score: number;
@@ -172,6 +174,20 @@ export interface Recommendation {
   data_freshness: string;
   priority: 'HIGH' | 'MEDIUM' | 'LOW' | string;
   status: 'PENDING' | 'APPLIED' | 'REJECTED';
+}
+
+export interface TariffPeriodDetail {
+  period: 'OFF_PEAK' | 'SHOULDER' | 'PEAK' | string;
+  rate: number;
+  hours: string;
+  description: string;
+}
+
+export interface TariffInfo {
+  currency: string;
+  currency_symbol: string;
+  rates: Record<string, number>;
+  periods: TariffPeriodDetail[];
 }
 
 export interface StatusUpdateRequest {
