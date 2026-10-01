@@ -108,6 +108,19 @@ class DisaggregationEngine:
                 "mape_pct": round(mape, 2),
                 "wape_pct": round(wape, 2)
             },
+            "components": {
+                "lighting": round(lighting, 2),
+                "hvac": round(hvac, 2),
+                "water_pump": round(water_pump, 2),
+                "lab_equipment": round(lab_equipment, 2),
+                "kitchen": round(kitchen, 2),
+                "it_network": round(it_network, 2)
+            },
+            "percentage_breakdown": {
+                "critical": pct_critical,
+                "essential": pct_essential,
+                "flexible": pct_flexible
+            },
             "detailed_loads": detailed_loads
         }
 

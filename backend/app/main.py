@@ -30,6 +30,53 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    code_map = {
+        400: "INVALID_REQUEST",
+        401: "UNAUTHORIZED",
+        403: "FORBIDDEN",
+        404: "RESOURCE_NOT_FOUND",
+        405: "METHOD_NOT_ALLOWED",
+        422: "VALIDATION_ERROR",
+        500: "INTERNAL_SERVER_ERROR"
+    }
+    code = code_map.get(exc.status_code, f"HTTP_{exc.status_code}")
+    message = str(exc.detail) if isinstance(exc.detail, str) else "HTTP Request Error"
+    details = exc.detail if isinstance(exc.detail, (dict, list)) else {}
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "code": code,
+                "message": message,
+                "details": details,
+                "timestamp": datetime.now().isoformat()
+            },
+            "detail": exc.detail
+        }
+    )
+
+@app.exception_handler(RequestValidationError)
+async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Invalid request parameters or payload structure.",
+                "details": {"validation_errors": exc.errors()},
+                "timestamp": datetime.now().isoformat()
+            },
+            "detail": exc.errors()
+        }
+    )
+
 # Core Calculation Engines
 CORE_ENGINES = {
     "data_generator": "Active (90-day 15-min telemetry)",

@@ -1,9 +1,10 @@
-# Rural Microgrid Intelligence Platform
+﻿# Rural Microgrid Intelligence Platform
 
 [![Python Version](https://img.shields.io/badge/Python-3.13%2B-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-sky.svg)](https://reactjs.org)
-[![Build Status](https://img.shields.io/badge/Tests-30%2F30%20Passed-emerald.svg)]()
+[![Build Status](https://img.shields.io/badge/Tests-62%2F62%20Passed-emerald.svg)]()
+[![API Contract](https://img.shields.io/badge/API_Contract-Documented_%26_Tested-blue.svg)](docs/API_CONTRACT.md)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
 > A scenario-based disaggregation, actionable cause detection, operational recommendation, and empirical verification platform for rural microgrids.
@@ -20,6 +21,7 @@ The **Rural Microgrid Intelligence Platform** converts smart meter telemetry, eq
 3. Actionable operational recommendations.
 4. Empirical **Baseline → Target → Measured → Verified Energy Reduction** experiments.
 5. Role-based views (Operations, Manager, Technician, Resident) with multi-language (English/Hindi) and WCAG 2.1 AA-oriented accessibility practices.
+6. Public benchmark validation (REDD House 1) and end-to-end integration testing.
 
 ---
 
@@ -130,6 +132,27 @@ The system generates a 90-day synthetic dataset at 15-minute intervals (8,640 re
 
 ---
 
+## 🌍 Public Dataset Validation (REDD House 1 Benchmark)
+
+To validate the algorithmic pipeline on uncurated, real-world data, the platform includes automated validation against the **Reference Energy Disaggregation Dataset (REDD)**, House 1 (Kolter & Johnson, MIT).
+
+> [!NOTE]
+> **Strict Public vs. Synthetic Separation**:
+> The REDD dataset reflects real-world residential smart meter telemetry from a US single-family residence. It is strictly separated from the synthetic 90-day rural microgrid campus simulation. REDD data is used exclusively to demonstrate algorithmic correctness and pipeline robustness on uncurated telemetry; it is NOT claimed to represent rural microgrid load profiles.
+
+- **Sample File**: `backend/data/public/redd_house1_sample.csv` (7 continuous days, 672 records at 15-min resampling).
+- **Channels**: Aggregate Feeder Mains, Refrigerator, Lighting, Electronics / Outlets, Secondary Lighting.
+- **Empirical Validation Metrics on Real REDD Data**:
+  - **Mean Absolute Error (MAE)**: `0.0801 kW`
+  - **Root Mean Square Error (RMSE)**: `0.0856 kW`
+  - **Mean Absolute Percentage Error (MAPE)**: `8.59%` (zero-threshold guarded)
+  - **Weighted Absolute Percentage Error (WAPE)**: `8.36%`
+  - **Energy Explained Ratio (EER)**: `91.64%`
+  - **Residual Unmetered Load**: `8.36%`
+- **Documentation**: Detailed provenance and boundary conditions documented in [`backend/data/public/README.md`](backend/data/public/README.md).
+
+---
+
 ## 🎯 Actionable Cause Detection & Recommendation Engine
 
 The engine cross-correlates power draws against schedules, occupancy, and tariff structures to generate transparent root-cause diagnoses with a 4-factor **Evidence Strength Score (0–100)** (a transparent heuristic score, not a statistical confidence interval):
@@ -140,7 +163,7 @@ The engine cross-correlates power draws against schedules, occupancy, and tariff
 - **EVIDENCE**: 7.1 kW draw during Peak Tariff when Off-Peak rate is ₹4.5/kWh.
 - **RECOMMENDED ACTION**: Shift water pumping schedule to late night Off-Peak tariff (10 PM - 2 AM).
 - **ESTIMATED SAVING**: `0.0 kWh/day` energy reduction (Load Shift) → `₹3,174.60 / month` cost saving.
-- **PROTOTYPE EVIDENCE SCORE**: `95 / 100` (High confidence under LIVE data: Freshness: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15; not a statistical confidence interval).
+- **PROTOTYPE EVIDENCE SCORE**: `95 / 100` (Freshness: +30, Schedule Overlap: +30, Tariff Overlap: +20, Pattern: +15).
 
 ### 2. HVAC Low-Occupancy Waste (`REC_HVAC_01` — True Energy Reduction)
 - **WHAT Happened?**: Air conditioning drawing excessive power while rooms are unoccupied.
@@ -227,6 +250,27 @@ Supported & Tested Edge Cases:
 
 ---
 
+## 📜 Explicit API Contracts & Schema Validation
+
+The platform defines strict API contracts documented in [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md):
+- **Typed Models**: Centralized Pydantic models in `backend/app/schemas/` covering telemetry, disaggregation, recommendations, verification, quality, and equipment.
+- **Frontend Type Safety**: Matching TypeScript interfaces in `frontend/src/types/api.ts`.
+- **Standardized Error Envelope**: Consistent error schema across all 4xx/5xx responses:
+  ```json
+  {
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Human-readable error description",
+      "details": { ... },
+      "timestamp": "ISO-8601"
+    },
+    "detail": "Backward-compatible string or list"
+  }
+  ```
+- **Automated Contract Tests**: 19 tests in `backend/tests/test_api_contracts.py` verifying response types, parameter ranges, and error handling.
+
+---
+
 ## 🌐 Language & Accessibility Checks
 
 - **Languages**: English (`en`) and Hindi (`hi`) translation toggle.
@@ -234,14 +278,35 @@ Supported & Tested Edge Cases:
 
 ---
 
-## 🧪 Automated Testing
+## 🧪 Automated Testing Suite
 
-Run Pytest suite:
+The repository includes a comprehensive 62-test automated suite executed via Pytest:
+
 ```bash
-cd backend
-python -m pytest tests/ -v
+# Run all tests (62 tests across all categories)
+python -m pytest backend/tests/ -v
+
+# Run public dataset validation tests (6 tests)
+python -m pytest backend/tests/test_public_dataset.py -v
+
+# Run API contract schema tests (19 tests)
+python -m pytest backend/tests/test_api_contracts.py -v
+
+# Run end-to-end integration tests (6 tests)
+python -m pytest backend/tests/integration/test_e2e_pipeline.py -v
+
+# Run core unit tests (31 tests)
+python -m pytest backend/tests/test_api.py backend/tests/test_generator.py backend/tests/test_disaggregation.py backend/tests/test_cause_recommendations.py backend/tests/test_verification.py backend/tests/test_edge_cases.py backend/tests/test_quality.py -v
 ```
-**Test Results**: **31 / 31 Passed (100% Pass Rate)**.
+
+### **Test Results Breakdown**
+| Test Suite | File | Tests | Status |
+| :--- | :--- | :--- | :--- |
+| **Core Unit Tests** | `test_api.py`, `test_generator.py`, `test_disaggregation.py`, `test_cause_recommendations.py`, `test_verification.py`, `test_edge_cases.py`, `test_quality.py` | 31 | **31 Passed** |
+| **Public Dataset Validation** | `test_public_dataset.py` | 6 | **6 Passed** |
+| **API Contract & Schemas** | `test_api_contracts.py` | 19 | **19 Passed** |
+| **E2E Integration Pipeline** | `integration/test_e2e_pipeline.py` | 6 | **6 Passed** |
+| **Total Automated Tests** | **Full Suite** | **62** | **62 Passed (100%)** |
 
 ---
 
@@ -253,7 +318,7 @@ cd backend
 python -m pip install -r requirements.txt
 python main.py
 ```
-Backend runs at: `http://localhost:8000` (Health API: `http://localhost:8000/api/health`)
+Backend runs at: `http://localhost:8000` (Health API: `http://localhost:8000/api/health`, Swagger Docs: `http://localhost:8000/docs`)
 
 ### Frontend (React + Vite)
 ```bash
@@ -263,17 +328,24 @@ cmd /c npm run dev
 ```
 Frontend runs at: `http://localhost:5173`
 
+Production build:
+```bash
+cd frontend
+cmd /c npm run build
+```
+
 ---
 
 ## 📡 Complete REST API Endpoint Directory
 
 | Endpoint | Method | Engine | Description |
 |---|---|---|---|
-| `/api/health` | GET | Core | Service health, engine registry, and compliance status |
+| `/api/health` | GET | Core | Service health, engine registry, and service counts |
 | `/api/data/meter` | GET | Generator | Retrieve raw 15-min smart meter time-series records |
 | `/api/data/context` | GET | Generator | Retrieve occupancy, ToU tariff, and solar data |
 | `/api/data/summary` | GET | Generator | Telemetry statistics and dataset date range |
 | `/api/equipment` | GET | Loader | Full registry of 9 microgrid loads and metadata |
+| `/api/equipment/{id}` | GET | Loader | Single equipment record by ID |
 | `/api/disaggregation` | GET | Disaggregation | Disaggregated equipment power channels and accuracy |
 | `/api/disaggregation/drilldown/{load_id}` | GET | Disaggregation | 24-hr schedule vs. occupancy vs. tariff alignment |
 | `/api/recommendations` | GET | Cause & Rec | Actionable recommendations with Evidence Scores |
@@ -293,18 +365,21 @@ Frontend runs at: `http://localhost:5173`
 rural-microgrind/
 ├── README.md                           # Master project documentation
 ├── docs/
+│   ├── API_CONTRACT.md                 # Formal API specifications & schema contracts
 │   ├── demo_script.md                  # 3-minute video presentation script with timestamps
 │   └── requirements.md                 # 20-item Requirements Traceability Matrix
 ├── reports/
 │   ├── evaluation_report.md            # Comprehensive empirical technical evaluation report
 │   └── user_validation.md              # 4-persona pilot protocol (validation pending field trial)
 ├── backend/
+│   ├── conftest.py                     # Root test configuration & path resolution
 │   ├── main.py                         # FastAPI server initialization and middleware
 │   ├── pyproject.toml                  # Backend project configuration
 │   ├── requirements.txt                # Python dependencies
 │   ├── app/
 │   │   ├── api/                        # REST API routers (data, quality, rec, verif, etc.)
-│   │   ├── core/                       # Config, Pydantic schemas, equipment registry loader
+│   │   ├── core/                       # Config, schemas, equipment registry loader
+│   │   ├── schemas/                    # Modular Pydantic models (telemetry, disagg, errors, etc.)
 │   │   ├── engines/                    # 6 Core algorithmic engines:
 │   │   │   ├── data_generator.py       # 90-day 15-min physics & telemetry generator
 │   │   │   ├── disaggregation_engine.py# Scenario-based load disaggregation
@@ -313,7 +388,22 @@ rural-microgrind/
 │   │   │   ├── quality_engine.py       # Telemetry freshness & edge failure simulator
 │   │   │   └── verification_engine.py  # Baseline vs Measured verification engine
 │   │   └── i18n/                       # Backend internationalization dictionaries
-│   └── tests/                          # 30 Pytest automated test cases
+│   ├── data/                           # Data storage & validation
+│   │   ├── public/                     # Standardized REDD House 1 sample & README
+│   │   ├── synthetic/                  # Synthetic microgrid simulation & README
+│   │   └── validation/                 # Metrics & public dataset validation pipeline
+│   └── tests/                          # 62 Pytest automated test cases
+│       ├── test_api.py                 # Health and routing tests
+│       ├── test_api_contracts.py       # 19 API contract & schema tests
+│       ├── test_cause_recommendations.py# Diagnostic & recommendation tests
+│       ├── test_disaggregation.py      # Load disaggregation accuracy tests
+│       ├── test_edge_cases.py          # Edge failure handling tests
+│       ├── test_generator.py           # Telemetry generation & physics tests
+│       ├── test_public_dataset.py      # 6 Public dataset validation tests
+│       ├── test_quality.py             # Data quality & freshness tests
+│       ├── test_verification.py        # M&V calculation & reconciliation tests
+│       └── integration/                # End-to-end integration tests
+│           └── test_e2e_pipeline.py    # 6 Multi-stage E2E scenarios
 └── frontend/
     ├── package.json                    # React dependencies and scripts
     ├── vite.config.js                  # Vite bundler configuration
@@ -322,6 +412,8 @@ rural-microgrind/
         ├── App.jsx                     # Root application container & navigation
         ├── components/                 # Reusable UI components (Navbar, Modal, Freshness, etc.)
         ├── pages/                      # 8 Page views (Dashboard, Disaggregation, Recs, etc.)
+        ├── services/                   # API client service layer
+        ├── types/                      # TypeScript definitions (api.ts)
         └── i18n/                       # Frontend translation dictionaries
 ```
 
@@ -342,6 +434,7 @@ See [`docs/requirements.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20pro
 ## ⚖️ Limitations & Roadmap
 
 - **Component Meter Disaggregation**: Current disaggregation utilizes synthetic sub-meter telemetry and contextual signals. Future iterations will integrate high-frequency Non-Intrusive Load Monitoring (NILM) harmonics (1–10 kHz).
+- **Public Dataset Generalizability**: Validation against REDD House 1 confirms algorithm mathematical soundness on real data, but cannot replace real-world in-situ field telemetry from rural developing-region microgrids.
 - **Representative User Validation**: User testing protocol is formalized under [`reports/user_validation.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/reports/user_validation.md) and labeled *"PENDING — representative-user validation not yet conducted"* until live hardware deployment.
 - **Battery Energy Storage (BESS)**: Planned roadmap item to integrate automated lithium-ion battery dispatch alongside load shifting.
 
