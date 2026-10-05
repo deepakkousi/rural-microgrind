@@ -8,6 +8,7 @@ import VerificationPage from './pages/VerificationPage';
 import QualityPage from './pages/QualityPage';
 import ExperimentsPage from './pages/ExperimentsPage';
 import ValidationPage from './pages/ValidationPage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -48,7 +49,9 @@ export default function App() {
         setLang={setLang}
       />
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {renderPage()}
+        <ErrorBoundary>
+          {renderPage()}
+        </ErrorBoundary>
       </main>
       <footer className="bg-slate-900 border-t border-slate-800 text-center py-4 text-xs text-slate-500 font-mono">
         Rural Microgrid Intelligence Platform • Phase 1 - 23 Complete Prototype • Academic & Production Prototype
