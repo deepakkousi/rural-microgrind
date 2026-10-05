@@ -101,11 +101,12 @@ def test_recommendations_contract():
         "recommendation_id", "equipment_id", "equipment_name", "load_tier",
         "action_type", "problem", "cause", "evidence",
         "recommended_action", "estimated_energy_saving_kwh", "estimated_cost_saving",
-        "evidence_score", "evidence_breakdown", "confidence", "status"
+        "evidence_score", "evidence_breakdown", "evidence_strength_normalized", "confidence", "status"
     ]
     for field in required_fields:
         assert field in rec, f"Missing {field} in recommendation"
     assert 0.0 <= rec["confidence"] <= 1.0
+    assert rec["evidence_strength_normalized"] == rec["confidence"]
     assert 0 <= rec["evidence_score"] <= 100
 
 

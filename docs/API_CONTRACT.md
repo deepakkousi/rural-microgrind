@@ -1,4 +1,4 @@
-﻿# Rural Microgrid Intelligence Platform — API Contract & Specification
+# Rural Microgrid Intelligence Platform — API Contract & Specification
 
 This document defines the formal API contracts, request/response schemas, validation rules, and standardized error responses for the Rural Microgrid Intelligence Platform REST API.
 
@@ -51,7 +51,7 @@ All error responses (HTTP 4xx and 5xx) conform to a strict, predictable JSON env
 | `GET` | `/api/data/context` | Contextual telemetry (occupancy, tariffs, solar) | `limit` (int, 1..8640, default: 96) |
 | `GET` | `/api/data/summary` | Dataset metadata, total rows, date boundary | None |
 | `GET` | `/api/data/tariff` | Active Time-of-Use tariff structure, rates, and schedule windows | None |
-| `GET` | `/api/disaggregation` | Disaggregated load components, baseline, confidence | None |
+| `GET` | `/api/disaggregation` | Disaggregated load tiers, evaluation metrics (MAE, RMSE, MAPE), and component loads | None |
 | `GET` | `/api/disaggregation/drilldown/{load_id}` | 15-min timeseries evidence for a specific load | Path: `load_id` (str, e.g. `EQ_WP_01`) |
 | `GET` | `/api/recommendations` | Active root-cause recommendations with evidence | None |
 | `GET` | `/api/recommendations/causes` | Detected root-cause diagnostics | None |
@@ -67,6 +67,7 @@ All error responses (HTTP 4xx and 5xx) conform to a strict, predictable JSON env
 | `GET` | `/api/quality/anomalies` | Detected sensor anomalies (stuck, negative, spike) | None |
 | `POST` | `/api/quality/simulate-failure` | Inject simulated edge failures for testing | Body: `FailureSimulationRequest` |
 | `GET` | `/api/user/roles` | Available user personas (`operations`, `manager`, `technician`, `resident`) | None |
+| `GET` | `/api/user/role` | Current user role session info (alias of `/api/user/roles`) | None |
 | `GET` | `/api/i18n/{lang}` | Localization dictionary for UI (`en`, `hi`) | Path: `lang` (str) |
 
 ---
@@ -196,6 +197,7 @@ Returns actionable operational recommendations with 4-part explanations, daily a
       "tariff_overlap": 20,
       "pattern_consistency": 15
     },
+    "evidence_strength_normalized": 0.95,
     "confidence": 0.95,
     "data_freshness": "LIVE",
     "priority": "HIGH",
@@ -203,6 +205,10 @@ Returns actionable operational recommendations with 4-part explanations, daily a
   }
 ]
 ```
+
+> [!NOTE]
+> **Heuristic Evidence Strength vs. Statistical Confidence**:  
+> The platform defines `evidence_score` as a transparent heuristic score from 0 to 100 based on four deterministic signals (telemetry freshness, schedule overlap, tariff correlation, and operational pattern). The `confidence` field (and its explicit alias `evidence_strength_normalized`) is a normalized float representation (`evidence_score / 100.0`, 0.0–1.0) retained for client compatibility. It represents heuristic evidence strength and is **NOT** a statistical confidence interval or statistical confidence level.
 
 ---
 

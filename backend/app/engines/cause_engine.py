@@ -1,4 +1,4 @@
-﻿import pandas as pd
+import pandas as pd
 import numpy as np
 from typing import List, Dict, Any
 from app.core.schemas import CauseEvidence, Recommendation
@@ -85,6 +85,7 @@ class CauseDetectionEngine:
                 estimated_cost_saving=monthly_cost,
                 evidence_score=total_evidence_score,
                 evidence_breakdown=breakdown,
+                evidence_strength_normalized=round(total_evidence_score / 100.0, 2),
                 confidence=round(total_evidence_score / 100.0, 2),
                 data_freshness=freshness.status,
                 priority="HIGH",
@@ -136,6 +137,7 @@ class CauseDetectionEngine:
                 estimated_cost_saving=monthly_cost,
                 evidence_score=total_evidence_score,
                 evidence_breakdown=breakdown,
+                evidence_strength_normalized=round(total_evidence_score / 100.0, 2),
                 confidence=round(total_evidence_score / 100.0, 2),
                 data_freshness=freshness.status,
                 priority="HIGH",
@@ -187,6 +189,7 @@ class CauseDetectionEngine:
                 estimated_cost_saving=monthly_cost,
                 evidence_score=total_evidence_score,
                 evidence_breakdown=breakdown,
+                evidence_strength_normalized=round(total_evidence_score / 100.0, 2),
                 confidence=round(total_evidence_score / 100.0, 2),
                 data_freshness=freshness.status,
                 priority="MEDIUM",
@@ -237,6 +240,7 @@ class CauseDetectionEngine:
                 estimated_cost_saving=monthly_cost,
                 evidence_score=total_evidence_score,
                 evidence_breakdown=breakdown,
+                evidence_strength_normalized=round(total_evidence_score / 100.0, 2),
                 confidence=round(total_evidence_score / 100.0, 2),
                 data_freshness=freshness.status,
                 priority="LOW",

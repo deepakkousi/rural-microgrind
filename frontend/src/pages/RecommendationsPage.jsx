@@ -73,7 +73,7 @@ export default function RecommendationsPage({ lang }) {
 
                 <div className="flex items-center space-x-3 text-xs font-mono">
                   <span className="text-slate-400">Freshness: <strong className="text-slate-200">{rec.data_freshness}</strong></span>
-                  <span className="text-slate-400">Evidence Strength: <strong className="text-sky-400">{Math.round(rec.confidence * 100)} / 100</strong></span>
+                  <span className="text-slate-400">Evidence Strength: <strong className="text-sky-400">{(rec.evidence_score !== undefined && rec.evidence_score !== null) ? rec.evidence_score : Math.round(rec.confidence * 100)} / 100</strong></span>
                   <span className={`px-2 py-0.5 font-bold rounded ${
                     rec.status === 'APPLIED' ? 'bg-emerald-500/20 text-emerald-300' :
                     rec.status === 'REJECTED' ? 'bg-rose-500/20 text-rose-300' :

@@ -1,4 +1,4 @@
-﻿# Requirements Traceability Matrix — Rural Microgrid Intelligence Platform
+# Requirements Traceability Matrix — Rural Microgrid Intelligence Platform
 
 This document maps every problem statement requirement to its specific technical implementation across the backend, frontend, API endpoints, automated tests, and verification evidence artifacts.
 
@@ -24,3 +24,5 @@ This document maps every problem statement requirement to its specific technical
 | 18| Error & Uncertainty Analysis| **PASS** | Target error calculation & assumed prototype bounds | `backend/app/engines/verification_engine.py` | `GET /api/verification/summary` | `VerificationPage.jsx` | `test_verification.py::test_error_analysis` | `reports/evaluation_report.md` |
 | 19| User Validation Protocol | **PENDING** | Pilot protocol defined; representative-user trial pending | `reports/user_validation.md` | N/A | `ValidationPage.jsx` | N/A | `reports/user_validation.md` |
 | 20| Demo Video Presentation | **PARTIAL** | Demo script & walkthrough available; video recording pending | `docs/demo_script.md` | N/A | N/A | N/A | `docs/demo_script.md` |
+| 21| Public Dataset Validation | **PASS** | Benchmark validation against MIT REDD House 1 uncurated telemetry | `backend/data/public/`, `metrics.py` | N/A | N/A | `test_public_dataset.py` (6 tests) | `reports/evaluation_report.md` |
+| 22| End-to-End Integration Testing | **PASS** | 6 multi-scenario automated end-to-end pipeline test cases | `backend/tests/integration/test_e2e_pipeline.py` | Multiple `/api/*` | N/A | `test_e2e_pipeline.py` (6 tests) | `reports/evaluation_report.md` |

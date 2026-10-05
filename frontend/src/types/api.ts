@@ -170,7 +170,8 @@ export interface Recommendation {
   estimated_cost_saving: number;
   evidence_score: number;
   evidence_breakdown: Record<string, number>;
-  confidence: number;
+  evidence_strength_normalized?: number;
+  confidence: number; // Normalized representation of the heuristic Evidence Strength Score (evidence_score / 100.0, 0.0 - 1.0); NOT statistical confidence.
   data_freshness: string;
   priority: 'HIGH' | 'MEDIUM' | 'LOW' | string;
   status: 'PENDING' | 'APPLIED' | 'REJECTED';

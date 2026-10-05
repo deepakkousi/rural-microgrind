@@ -19,6 +19,7 @@ def test_recommendations_evidence_score_and_action_type():
         assert r.estimated_cost_saving > 0.0
         assert 0 <= r.evidence_score <= 100
         assert r.confidence == round(r.evidence_score / 100.0, 2)
+        assert r.evidence_strength_normalized == round(r.evidence_score / 100.0, 2)
         assert len(r.evidence_breakdown) > 0
         assert r.status in ["PENDING", "APPLIED", "REJECTED"]
         

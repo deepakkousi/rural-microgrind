@@ -267,7 +267,7 @@ The platform defines strict API contracts documented in [`docs/API_CONTRACT.md`]
     "detail": "Backward-compatible string or list"
   }
   ```
-- **Automated Contract Tests**: 19 tests in `backend/tests/test_api_contracts.py` verifying response types, parameter ranges, and error handling.
+- **Automated Contract Tests**: 26 tests in `backend/tests/test_api_contracts.py` verifying response types, parameter ranges, and error handling.
 
 ---
 
