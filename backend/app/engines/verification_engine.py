@@ -30,6 +30,8 @@ class VerificationEngine:
                 "message": "Insufficient meter data across baseline or verification periods."
             }
 
+        # Helper function to convert power (kW) to energy (kWh) over the specified dataframe period.
+        # Multiplying by 0.25 integrates 15-minute telemetry intervals (1/4 of an hour) into kWh.
         def calc_daily_kwh(sub_df, col='total_kw'):
             if sub_df.empty or col not in sub_df.columns:
                 return 0.0
@@ -37,6 +39,8 @@ class VerificationEngine:
             num_days = sub_df['day_index'].nunique()
             return float(total_kwh / max(1, num_days))
 
+        # Calculates total financial cost by multiplying the integrated energy (kWh) of each interval
+        # against its exact dynamic time-of-use (ToU) tariff rate, then normalizes to a daily average.
         def calc_daily_cost(sub_df, col='total_kw'):
             if sub_df.empty or col not in sub_df.columns:
                 return 0.0

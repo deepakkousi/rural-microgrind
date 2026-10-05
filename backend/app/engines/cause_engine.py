@@ -44,6 +44,8 @@ class CauseDetectionEngine:
         # 1. WATER PUMP PEAK TARIFF CAUSE (COST REDUCTION / LOAD SHIFTING)
         # ---------------------------------------------------------------------
         peak_wp = df_calc[(df_calc['tariff_period'] == 'PEAK') & (df_calc['water_pump_kw'] > 4.0)]
+        # Identifies water pumping cycles that systematically overlap with the PEAK tariff window.
+        # A threshold of >10 intervals confirms a persistent schedule rather than a one-off manual override.
         if len(peak_wp) > 10:
             avg_peak_kw = float(peak_wp['water_pump_kw'].mean())
             avg_peak_tariff = float(peak_wp['tariff_rate'].mean())
@@ -62,6 +64,9 @@ class CauseDetectionEngine:
                 "tariff_overlap": 20,
                 "pattern_consistency": 15
             }
+            # The total Evidence Strength Score is a heuristic bounded at 100.
+            # It aggregates telemetry freshness, occupancy correlation, scheduling, and pattern persistence.
+            # It is designed purely for operational explainability and prioritization, NOT a statistical confidence interval.
             total_evidence_score = sum(breakdown.values())
 
             recommendations.append(Recommendation(
@@ -114,6 +119,9 @@ class CauseDetectionEngine:
                 "schedule_correlation": 20,
                 "pattern_consistency": 15
             }
+            # The total Evidence Strength Score is a heuristic bounded at 100.
+            # It aggregates telemetry freshness, occupancy correlation, scheduling, and pattern persistence.
+            # It is designed purely for operational explainability and prioritization, NOT a statistical confidence interval.
             total_evidence_score = sum(breakdown.values())
 
             recommendations.append(Recommendation(
@@ -166,6 +174,9 @@ class CauseDetectionEngine:
                 "tariff_overlap": 20,
                 "pattern_consistency": 15
             }
+            # The total Evidence Strength Score is a heuristic bounded at 100.
+            # It aggregates telemetry freshness, occupancy correlation, scheduling, and pattern persistence.
+            # It is designed purely for operational explainability and prioritization, NOT a statistical confidence interval.
             total_evidence_score = sum(breakdown.values())
 
             recommendations.append(Recommendation(
@@ -217,6 +228,9 @@ class CauseDetectionEngine:
                 "schedule_correlation": 20,
                 "pattern_consistency": 15
             }
+            # The total Evidence Strength Score is a heuristic bounded at 100.
+            # It aggregates telemetry freshness, occupancy correlation, scheduling, and pattern persistence.
+            # It is designed purely for operational explainability and prioritization, NOT a statistical confidence interval.
             total_evidence_score = sum(breakdown.values())
 
             recommendations.append(Recommendation(
