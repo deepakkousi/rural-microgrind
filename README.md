@@ -441,7 +441,7 @@ See [`docs/requirements.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20pro
 ## ⚖️ Limitations & Roadmap
 
 - **Component Meter Disaggregation**: Current disaggregation utilizes synthetic sub-meter telemetry and contextual signals. Future iterations will integrate high-frequency Non-Intrusive Load Monitoring (NILM) harmonics (1–10 kHz).
-- **Public Dataset Generalizability**: Validation against REDD House 1 confirms algorithm mathematical soundness on real data, but cannot replace real-world in-situ field telemetry from rural developing-region microgrids.
+- **Public Dataset Generalizability**: Validation against REDD House 1 provides external validation of the processing/disaggregation pipeline on real-world residential telemetry, but does not establish rural microgrid field performance.
 - **Representative User Validation**: User testing protocol is formalized under [`reports/user_validation.md`](file:///c:/Users/M.DEEPAK%20KUMAR/Desktop/c28%20project/reports/user_validation.md) and labeled *"PENDING — representative-user validation not yet conducted"* until live hardware deployment.
 - **Battery Energy Storage (BESS)**: Planned roadmap item to integrate automated lithium-ion battery dispatch alongside load shifting.
 
