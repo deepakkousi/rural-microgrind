@@ -138,7 +138,7 @@ To validate the algorithmic pipeline on uncurated, real-world data, the platform
 
 > [!NOTE]
 > **Strict Public vs. Synthetic Separation**:
-> The REDD dataset reflects real-world residential smart meter telemetry from a US single-family residence. It is strictly separated from the synthetic 90-day rural microgrid campus simulation. REDD data is used exclusively to demonstrate algorithmic correctness and pipeline robustness on uncurated telemetry; it is NOT claimed to represent rural microgrid load profiles.
+> The REDD dataset reflects real-world residential smart meter telemetry from a US single-family residence. It is strictly separated from the synthetic 90-day rural microgrid campus simulation. REDD data is used exclusively to validate pipeline robustness and disaggregation processing on uncurated real-world telemetry; it is NOT claimed to represent rural microgrid load profiles.
 
 - **Sample File**: `backend/data/public/redd_house1_sample.csv` (7 continuous days, 672 records at 15-min resampling).
 - **Channels**: Aggregate Feeder Mains, Refrigerator, Lighting, Electronics / Outlets, Secondary Lighting.

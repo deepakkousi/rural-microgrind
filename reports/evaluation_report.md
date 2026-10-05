@@ -1,4 +1,4 @@
-﻿# Comprehensive Evaluation Report — Rural Microgrid Intelligence Platform
+# Comprehensive Evaluation Report — Rural Microgrid Intelligence Platform
 
 This document presents the complete technical and experimental evaluation of the Rural Microgrid Intelligence Platform prototype, populated exclusively with empirical numbers derived from actual execution across both the synthetic rural microgrid experiment and public benchmark validation.
 
@@ -69,7 +69,7 @@ To validate data cleaning, zero-threshold guarded metrics, and tier-disaggregati
 
 > [!IMPORTANT]
 > **Strict Separation of Public vs. Synthetic Context**:
-> The REDD dataset reflects real-world residential smart meter telemetry from a single-family home in Massachusetts, USA. It is strictly separated from the synthetic 90-day rural microgrid campus simulation. REDD data is used solely to demonstrate algorithmic correctness and pipeline robustness on uncurated non-synthetic telemetry; it is NOT claimed to represent rural microgrid load profiles.
+> The REDD dataset reflects real-world residential smart meter telemetry from a single-family home in Massachusetts, USA. It is strictly separated from the synthetic 90-day rural microgrid campus simulation. REDD data is used solely to validate pipeline robustness and disaggregation processing on uncurated real-world telemetry; it is NOT claimed to represent rural microgrid load profiles.
 
 #### **Public Dataset Characteristics**
 - **Source**: REDD (Reference Energy Disaggregation Dataset), House 1.
