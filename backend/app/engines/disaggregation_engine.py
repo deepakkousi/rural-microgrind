@@ -27,7 +27,13 @@ class DisaggregationEngine:
         if total <= 0.0:
             total = lighting + hvac + water_pump + lab_equipment + kitchen + it_network
 
-        # Tier breakdown
+        # ---------------------------------------------------------------------
+        # TIER BREAKDOWN (Domain Concept)
+        # The microgrid enforces three operational reliability tiers to guide shedding:
+        # 1. Critical: Zero-downtime essential infrastructure (IT/Networking).
+        # 2. Essential: Required for life-safety and basic needs (Lighting, Water, Food).
+        # 3. Flexible: Highly deferrable loads ideal for cost-saving via load shifting (HVAC, Heavy Machinery).
+        # ---------------------------------------------------------------------
         critical_kw = round(it_network, 2)
         essential_kw = round(lighting * 0.6 + water_pump + kitchen, 2)
         flexible_kw = round(hvac + lab_equipment + lighting * 0.4, 2)
@@ -47,14 +53,16 @@ class DisaggregationEngine:
         mae = float(np.mean(abs_errors))
         rmse = float(np.sqrt(np.mean(abs_errors ** 2)))
         
-        # Safe MAPE calculation (ignoring zero totals or using threshold)
+        # Mean Absolute Percentage Error (MAPE) becomes unstable when total_kw is close to 0.
+        # We mask values < 0.5 kW to prevent division by zero in off-hours.
         non_zero_mask = total_series > 0.5
         if np.sum(non_zero_mask) > 0:
             mape = float(np.mean(abs_errors[non_zero_mask] / total_series[non_zero_mask]) * 100)
         else:
             mape = 0.0
             
-        # Weighted Absolute Percentage Error (WAPE = sum(|actual - est|) / sum(actual) * 100)
+        # Weighted Absolute Percentage Error (WAPE) is more robust for intermittent building energy data
+        # as it weighs errors by the overall volume of consumption rather than averaging interval errors.
         total_sum = np.sum(total_series)
         wape = float((np.sum(abs_errors) / max(0.1, total_sum)) * 100)
 
@@ -64,7 +72,9 @@ class DisaggregationEngine:
         
         for eq in equipment_list:
             ch_val = float(max(0, latest.get(eq.channel_key, 0.0)))
-            # Split shared channels proportionally
+            # Some physical meter channels measure aggregate sub-panels rather than single devices.
+        # Here we perform synthetic rule-based decomposition (NILM proxy) to estimate individual equipment loads.
+        # Future hardware revisions would replace this with high-frequency harmonic analysis.
             if eq.equipment_id == "EQ_IT_01":
                 load_val = round(ch_val * 0.7, 2) # Server rack ~70% of IT
             elif eq.equipment_id == "EQ_IT_02":

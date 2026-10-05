@@ -94,9 +94,18 @@ For complete technical execution details, coverage, and module breakdowns, see [
 
 ## Error Boundaries and Error Handling
 
-The platform handles exceptions gracefully across both the backend and frontend:
-- **Backend**: Implements a standardized JSON error envelope for 400 (validation), 404 (not found), 422 (unprocessable entity), and 500 (internal server errors).
-- **Frontend**: The React application leverages a root <ErrorBoundary> component to catch rendering exceptions safely and provide recovery paths without crashing the UI. Missing or stale telemetry automatically suppresses unsafe recommendations.
+The platform handles exceptions gracefully by clearly distinguishing between backend, network, and rendering failures:
+
+1. **Backend / API Errors**:
+   - Implements a standardized JSON error envelope: `{ "error": { "code", "message", "details", "timestamp" } }`.
+   - Explicitly handles `400` (invalid parameters), `404` (missing resources), `422` (validation schemas), and `500` (internal server errors). Unsafe telemetry (missing/stale) returns specific operational data-unavailable statuses.
+
+2. **Frontend Network Errors**:
+   - The React API service handles timeout/network failures gracefully, avoiding infinite loading states by presenting clear "Backend Unavailable" fallback UI components.
+
+3. **Frontend Rendering Errors**:
+   - Implemented via a central React `<ErrorBoundary>` component (`frontend/src/components/ErrorBoundary.jsx`).
+   - Catching React component crashes prevents the entire DOM from unmounting (white screen of death) and provides a user-friendly fallback UI with a localized "Reload Dashboard" action.
 
 ---
 
@@ -122,6 +131,16 @@ For the exhaustive specification covering all endpoints, parameters, and standar
 The platform processes time-series telemetry data rather than maintaining a traditional relational SQL database. The data flow relies on 15-minute resolution metrics tracking aggregate load, component loads (HVAC, Lighting, Water Pump, CNC, etc.), contextual variables (occupancy, tariff rates), and solar generation.
 
 For the exact field definitions and data-flow pipeline mapping, see [docs/DATA_SCHEMA.md](docs/DATA_SCHEMA.md).
+
+---
+
+## Source-Code Documentation
+
+The backend algorithmic engines (e.g., disaggregation_engine.py, quality_engine.py, erification_engine.py) contain high-value, domain-specific technical comments. These comments explicitly document:
+- The mathematical conversion of 15-minute intervals into kWh.
+- The distinction between real energy reduction and cost reduction via load shifting.
+- The heuristics defining the Evidence Strength Score.
+- Why missing/stale telemetry downgrades or disables recommendations for grid stability.
 
 ---
 
@@ -157,7 +176,8 @@ rural-microgrind/
 
 - **Component Meter Disaggregation**: Current disaggregation utilizes synthetic sub-meter telemetry and contextual signals. Future iterations will integrate high-frequency Non-Intrusive Load Monitoring (NILM) harmonics (1-10 kHz).
 - **Public Dataset Generalizability**: Validation against REDD House 1 provides external validation of the processing pipeline, but does not establish rural microgrid field performance.
-- **Representative User Validation**: User testing protocol is formalized under eports/user_validation.md and labeled *"PENDING"* until field execution.
+- **Representative User Validation**: User testing protocol is formalized under 
+eports/user_validation.md and labeled *"PENDING"* until field execution.
 
 ---
 

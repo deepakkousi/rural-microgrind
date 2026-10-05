@@ -20,6 +20,9 @@ class DataQualityEngine:
             }
 
     def evaluate_freshness(self, latest_timestamp_str: Optional[str] = None) -> FreshnessStatus:
+        # Microgrid operational decisions rely on real-time awareness.
+        # If telemetry is missing or severely delayed, acting on stale data (e.g. issuing a load-shed command)
+        # could cause grid instability or damage equipment. We explicitly disable/downgrade recommendations here.
         if self.simulated_failure and self.simulated_failure["type"] == "MISSING_DATA":
             return FreshnessStatus(
                 status="MISSING",
